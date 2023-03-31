@@ -58,8 +58,8 @@ graph_style = '''
     border-color: white;
 '''
 #Link Data
-# connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
-# df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
+connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
+df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
 
 ### Determining percentage & arrow type
 total_victim = 0
