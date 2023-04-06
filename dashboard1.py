@@ -211,7 +211,7 @@ with ui.row().style('width: 100%'):
         with ui.row().style('padding: 20px 0px 0px 30px; font-weight: 700; font-size: 1vw').classes('items-center'):
             
             ui.label('Scam Count')
-            ui.toggle(['D', 'W', 'M', 'Y'], value = 'D').style('margin-left: 20vw')
+            ui.toggle(['D', 'W', 'M', 'Y'], value = 'D').style('margin-left: 30%')
             ui.button('Filter').props('color = positive').style('margin-left: 3vw')
             
             
@@ -269,15 +269,17 @@ with ui.row().style('width: 100%'):
     #   Box 4: Rate of Change Plot
     with ui.element('div').style(box_3_4_style):
         
-        ui.label('Rate of Change (%)').style('padding: 22px 0px 0px 30px; font-weight: 700; font-size: 1vw')
+        ui.label('Rate of Change (%)').style('padding: 2vw 0px 0px 30px; font-weight: 700; font-size: 1vw')
 
         ##  Getting x & y data ready
+        date = dates[1:]
+        
         rate_of_change = []
         
-        for i in range(29):
+        for i in range(1, 30):
             change = 0
-            old = no_of_cases[i]
-            new = no_of_cases[i + 1]
+            old = no_of_cases[i-1]
+            new = no_of_cases[i]
             if old == 0:
                 rate_of_change.append(0)
             else:
@@ -289,7 +291,7 @@ with ui.row().style('width: 100%'):
         ##  Plotting Graph
         rate_of_change_line_graph = go.Figure()
         rate_of_change_line_graph.add_trace(go.Scatter(
-            x = dates,
+            x = date,
             y = rate_of_change,
             mode = 'lines + markers',
             line = {'width': 3, 'color': '#2C7BE5'},
