@@ -6,6 +6,7 @@ import seaborn as sns
 import numpy as np
 from datetime import date, timedelta
 
+
 ### Style
 ui.add_head_html('''
     <style> 
@@ -50,9 +51,9 @@ downward_percentage_style = '''
 '''
 
 graph_style = '''
+    width: 80%;
     margin: auto;
     margin-top: 30px;
-    background-color: red;
     border-width: 10px;
     border-radius: 20px;
     border-color: white;
@@ -102,7 +103,7 @@ with ui.element('div').style('font-family: "Century Gothic"; text-align: center;
     
     with ui.row().style('margin-top: -5px; opacity: 0.75'):
         #Week
-        with ui.row().style(percentage_style):
+        with ui.row().style(percentage_style).classes('shadow-md'):
             if week_arrow == 'arrow_upward':
                 ui.icon(week_arrow).style(upward_arrow_style)
                 ui.label(str(week_percentage) + '% WoW').style(upward_percentage_style)
@@ -150,26 +151,27 @@ dates.reverse()
 
 
 with ui.element('div').style(graph_style):
-    with ui.pyplot(figsize = (15,5)):
+    with ui.pyplot():
+        
         # x = dates
         # y = no_of_cases
         x = list(range(1,31))
         y = np.random.randint(1, 300, 30)
-        z = np.random.randint(1, 100, 30)
+    #     z = np.random.randint(1, 100, 30)
 
         
         plt.bar(x,y, color = '#78a9ff')
-        plt.plot(x,z, color = '#993366', marker = 'o')
-        plt.legend(['Rate', 'Num_Scam'])
+    #     plt.plot(x,z, color = '#993366', marker = 'o')
+    #     plt.legend(['Rate', 'Num_Scam'])
 
-        ax = plt.gca()
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.spines['left'].set_visible(False)
-        ax.spines['bottom'].set_color('#DDDDDD')
-        ax.set_axisbelow(True)
-        ax.set_ylabel('No. Of Scam Cases', labelpad = 15)
-        ax.yaxis.grid(True, color='#d9d9d9')
+    #     ax = plt.gca()
+    #     ax.spines['top'].set_visible(False)
+    #     ax.spines['right'].set_visible(False)
+    #     ax.spines['left'].set_visible(False)
+    #     ax.spines['bottom'].set_color('#DDDDDD')
+    #     ax.set_axisbelow(True)
+    #     ax.set_ylabel('No. Of Scam Cases', labelpad = 15)
+    #     ax.yaxis.grid(True, color='#d9d9d9')
 
 with ui.element('div').style('margin:auto'):
     with ui.row():
