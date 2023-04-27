@@ -50,7 +50,7 @@ box_2_style = '''
     border-style: solid; 
     border-width: 1px; 
     border-radius: 10px;
-    border-color: #132238; 
+    border-color: #132238;
     
     background-color: #132238;
     
