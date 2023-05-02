@@ -208,7 +208,7 @@ with ui.row().style('width: 100%'):
     
     with ui.element('div').style(box_3_4_style):
         
-        with ui.row().style('padding: 20px 0px 0px 30px; font-weight: 700; font-size: 1vw').classes('items-center'):
+        with ui.row().style('padding: 2vh 0px 0px 30px; font-weight: 700; font-size: 1vw').classes('items-center'):
             
             ui.label('Scam Count')
             ui.toggle(['D', 'W', 'M', 'Y'], value = 'D').style('margin-left: 30%')
@@ -269,7 +269,7 @@ with ui.row().style('width: 100%'):
     #   Box 4: Rate of Change Plot
     with ui.element('div').style(box_3_4_style):
         
-        ui.label('Rate of Change (%)').style('padding: 2vw 0px 0px 30px; font-weight: 700; font-size: 1vw')
+        ui.label('Rate of Change (%)').style('padding: 2vh 0px 0px 30px; font-weight: 700; font-size: 1vw')
 
         ##  Getting x & y data ready
         date = dates[1:]
