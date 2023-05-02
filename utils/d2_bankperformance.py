@@ -61,7 +61,7 @@ grid.options.update(
 #     column['floatingFilter']  = True
 print(grid.options)
 
-######################3
+######################
 ui.aggrid
 
 dropdown = ui.select(['min', 'max', 'sum', 'mean'], value='mean', on_change = lambda x:update(x.value))

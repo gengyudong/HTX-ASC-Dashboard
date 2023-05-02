@@ -3,7 +3,7 @@ import pymysql
 import pandas as pd
 
 from utils.d2_fundrecovery import *
-from utils.d2_recoverytypology import *
+# from utils.d2_recoverytypology import *
 
 app.add_static_files('/media', 'media')
 
@@ -64,8 +64,8 @@ with ui.element('div').style(recovery_progress_style):
 with ui.row().style('height: 65.5vh; width: 100%'):
     
     #   Recovery by Typology Plot
-    with ui.element('div').style(general_style).style('height: 65.5vh; width: 35%'):
-        recovery_by_typology_plot().style('height: 100%; width: 100%')    
+    # with ui.element('div').style(general_style).style('height: 65.5vh; width: 35%'):
+        # recovery_by_typology_plot().style('height: 100%; width: 100%')    
       
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
     
