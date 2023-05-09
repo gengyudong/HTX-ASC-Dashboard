@@ -1,7 +1,6 @@
 from nicegui import ui
 import pandas as pd
 
-
 def fund_flow_plot(df):
     ###     Data Processing 
     fundFlowDf = df[['overseas_local']]
@@ -47,7 +46,10 @@ def fund_flow_plot(df):
                     }],
             'legend':{
                 'enabled': False
-            }
+            },
+            'credits': {
+                'enabled': False
+            },
         }).classes('w-full h-64')
     
     return chart

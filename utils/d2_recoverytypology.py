@@ -4,9 +4,12 @@ from nicegui import ui
 
 # def formatter(y):
 #     return str(y/1000000)+'M'
+# connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
+# df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
+
 
 def recovery_by_typology_plot(df):
-
+    
     #   Retrive data
     df = df[[ 'latest_balance_seized', 'amount_scammed', 'scam_type']].copy()
 
@@ -64,13 +67,20 @@ def recovery_by_typology_plot(df):
                 'type': 'category',
                 'categories': scam_list,
                 'min': 0,
-                'max': 5,
+                'max': 4,
                 'tickLength': 0,
                 'labels':{
                     'style': {'color': '#CED5DF',
                             #   'font-size':'1.5vh',
                               }
-                }
+                },
+                'scrollbar':{
+                'enabled':True,
+                # 'barBorderRadius': 1,
+                # 'rifleColor': None,
+                # 'trackBackgroundColor': 'rgba(0,0,0,0)',
+                # 'showFull':False, 
+            },
             },
             'yAxis':{
                 'title': {
@@ -85,15 +95,9 @@ def recovery_by_typology_plot(df):
                     },
                 },
                 'gridLineDashStyle': 'dash',
+                
             },
-
-            'scrollbar':{
-                'enabled':True,
-                'barBorderRadius': 1,
-                'buttonsEnabled': False, #lol doesnt do shit 
-                'rifleColor': None,
-                'trackBackgroundColor': 'rgba(0,0,0,0)',
-            },
+            
             'plotOptions': {
                 'bar': {
                     'dataLabels': {
@@ -118,8 +122,8 @@ def recovery_by_typology_plot(df):
             #                 'formatter':""" function () {
             #     return this.value + ' units';
             # }"""
-                            # cant figure out how to round this thing to M
-                            #might try using number formatter (formats all numbers not just data labels to millions)
+            # cant figure out how to round this thing to M
+            #might try using number formatter (formats all numbers not just data labels to millions)
                     }
                     
                     }],
@@ -128,8 +132,14 @@ def recovery_by_typology_plot(df):
             
             'legend':{
                 'enabled': False
-            }
+            },
+
+            'credits': {
+                'enabled': False
+            },
         }, extras = ['stock']) 
 
     return chart
 
+# recovery_by_typology_plot(df)
+# ui.run()

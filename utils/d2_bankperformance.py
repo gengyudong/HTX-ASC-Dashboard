@@ -6,6 +6,7 @@ from nicegui import ui
 
 ### Data Processing 
 def bank_performance_table_dropdown(df):
+
     df = df[[ 'account_bank', 'datetime_production_order_served', 
              'datetime_bank_account_frozen', 'amount_scammed']].copy()
     #   Data cleaning 
@@ -23,13 +24,25 @@ def bank_performance_table_dropdown(df):
 
     #   Preparing Data to display
     to_display_df = stats[['account_bank', 'datetime_production_order_served-count','amount_scammed-mean']]
-    to_display_df = to_display_df.rename(columns = {'Account_bank': "Bank", 
-                                    'datetime_production_order_served-count': 'Number of Production Orders Sent',
+    to_display_df = to_display_df.rename(columns = {
+                                    'account_bank': "Bank", 
+                                    'datetime_production_order_served-count': 'Production Orders Sent',
                                     'amount_scammed-mean':'Amount Scammed',
                                     })
 
     ###     Grid
-    grid = ui.aggrid.from_pandas(to_display_df).classes('max-h-70')
+    grid_style = '''
+        --ag-header-background-color:  #03002e;
+        --ag-header-foreground-color: #CED5DF;
+        
+        --ag-background-color: rgb(0,0,0,0);
+        --ag-foreground-color: #CED5DF;
+        --ag-odd-row-background-color: #03002e;
+        --ag-row-hover-color:rgb(192, 229, 249, 0.2);
+    '''
+
+
+    grid = ui.aggrid.from_pandas(to_display_df).style(grid_style)
     grid.options['columnDefs'][0].update({'filter':'agTextColumnFilter'})
     grid.options['columnDefs'][1].update({'filter':'agNumberColumnFilter',
                                         'filterParams':{
@@ -49,7 +62,8 @@ def bank_performance_table_dropdown(df):
                                                             'inRange']},
                                         # 'valueFormatter': (lambda x: '$'+x.data.amount_scammed-mean) #does nothing
                                             })
-    print(grid.options)
+    # print(grid.options)
+
 
     grid.options.update(
         {'defaultColDef':{
@@ -57,11 +71,6 @@ def bank_performance_table_dropdown(df):
             'floatingFilter': True,
             'suppressMenu' : True,
             },
-        'rowStyle':{
-            'background': 'rgba(0,0,0,0)'
-            },
-        'cellStyle': {'color': 'red', 'background-color': 'green'}, #does nothing
-        
             },)
     
 

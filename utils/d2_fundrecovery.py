@@ -1,5 +1,6 @@
 from nicegui import ui
 
+
 def fund_recovery_plot(df):
     df_amount_recovery = df[['amount_scammed', 'latest_balance_seized']].copy()
     df_amount_recovery = df_amount_recovery.fillna(0)

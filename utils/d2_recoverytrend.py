@@ -162,9 +162,9 @@ def recovery_trend_plot(df):
         },
         
         'navigator': {
-            'enabled': False
+            'enabled': True
         },
-        
+
         'scrollbar': {
             'enabled': False
         },
@@ -194,3 +194,4 @@ def recovery_trend_plot(df):
     }, type = 'stockChart', extras = ['stock'])
 
     return chart
+
