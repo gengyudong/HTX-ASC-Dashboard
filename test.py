@@ -1,19 +1,45 @@
 from nicegui import ui
+import pymysql
+import pandas as pd
+from test2 import *
 
-a = 'Hello World'
-b = 'hi'
+@ui.refreshable
+def content():
+    connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
 
-def change_value():
-    global a
-    a = b
+    df_test = pd.read_sql_query("SELECT * FROM sys.sys_config", connection2)
     
+    chart(df_test).style('height: 80vh; width: 100%')
+
+
+content()
+
+#   Updating of db
+connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
+df_test = pd.read_sql_query("SELECT * FROM sys.sys_config", connection2)
+initial_df_len = len(df_test.index)
+
+def update():
+    content.refresh()
+
+@ui.refreshable
+def check_db_change():
+    # Initiating Connection with DB
+    # connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
+    # df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
+    df_test = pd.read_sql_query("SELECT * FROM sys.sys_config", connection2)
+    final_df_len = len(df_test.index)
+    print(initial_df_len)
+    print(final_df_len)
     
-ui.button('press to change value', on_click=lambda: result.set_text(b))
+    if final_df_len != initial_df_len:
+        update()
 
-result = ui.label(a)
+check_db_change()
 
-if result.text == 'hi':
-    ui.label('it worked')
+def a():
+    check_db_change.refresh()
 
+ui.timer(10.0, a)
+ui.run()
 
-ui.run(port = 8082)
