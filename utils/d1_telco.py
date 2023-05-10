@@ -1,4 +1,3 @@
-import pandas as pd
 from nicegui import ui
 
 def telco_plot(telco_df):
@@ -11,7 +10,7 @@ def telco_plot(telco_df):
     chart = ui.chart({
             'title': {
                 'text': 'Telco Line Termination',
-                'margin': 50,
+                'margin': 20,
                 'align': 'left',
                 'style': {
                     'color': '#CED5DF',
@@ -22,6 +21,7 @@ def telco_plot(telco_df):
             
             'chart': {
                 'type': 'bar',
+                'zoomType': 'xy',
                 'backgroundColor': 'rgba(0,0,0,0)',
             },
             
@@ -45,15 +45,14 @@ def telco_plot(telco_df):
                 'gridLineDashStyle': 'dash',
                 'categories': telco_name_list,
                 'labels': {
-                    'style': {
-                        'color': '#CED5DF',
-                    }
+                    'style': {'color': '#CED5DF'}
                 },
             },
             'series': [{'data': telco_count_list,
                     'dataLabels':{
                             'enabled': True
-                    }
+                    },
+                     'color': 'rgba(52, 181, 213, 0.7)',
             }],
             
             'legend':{

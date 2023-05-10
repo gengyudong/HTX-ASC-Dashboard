@@ -1,48 +1,51 @@
 
-##  Getting x & y data ready
-        # today = date.today()
-        # dates_temp = []
-        # dates = []
-        # no_of_cases = []
+# mapbox_access_token = 'pk.eyJ1IjoiZ2VuZ3l1ZG9uZyIsImEiOiJjbGdkcnhocXoxdzFwM2RvNnB3YmU0dm51In0.t_EXRVIhGE46Fq-3nnq_Uw'
 
-        # for i in range(30):
-        #     previous_date = today - timedelta(days = i)
-        #     previous_date = previous_date
-        #     dates_temp.append(previous_date)
+#     #   Plotting Scattermapbox
+#     heatmap = go.Figure()
+#     heatmap.add_trace(go.Scattermapbox(
+#         lat = lat_list,
+#         lon = long_list,
+#         mode = 'markers',
 
-        # dates_temp.reverse()
-
-        # for date in dates_temp:
-        #     df_for_this_date = df[df.date_assigned == date]
-        #     no_of_cases_on_this_date = len(df_for_this_date.index)
-        #     no_of_cases.append(no_of_cases_on_this_date)
-
-        # for date in dates_temp:
-        #         date = date.strftime("%#Y-%#m-%d")
-        #         dates.append(date)
-      
-
-
-
-        # for i in range(len(df_day.index)):
-        #     day = df_day['date'][i]
-        #     day = day.strftime("%Y-%m-%d")
-        #     days.append(day)
+#         marker = go.scattermapbox.Marker(
+#             autocolorscale = False,
+#             cauto = True,
+#             cmin = 0,
+#             colorscale = [[0, "#BBD3F2"], [0.125, "#95B5DE"], [0.25, "#6E96CA"], [0.375, "#5B87C0"], [0.5, "#4777B6"], [0.625, "#3468AC"], [0.75, "#2A60A7"], [1, "#2058A2"]],    
+#             color = scam_count_list,
             
-        #     cases = df_day['no_of_cases'][i]
-        #     no_of_cases.append(cases)
+#             size = scam_count_list,
+#             sizeref = 3,
+#             sizemode = 'area'
+#         ), 
+        
+#         text = [hq_list[i] + '<br>' + 'Scam Cases: ' + str('{:,}'.format(scam_count_list[i])) for i in range(len(hq_list))],
+#         hoverinfo = 'text',
+#     )) 
 
+#     heatmap.update_layout(
+#         margin = {'l': 0, 'r': 0, 't': 0, 'b': 0},
+#         autosize = True, 
+#         mapbox = dict(
+#             accesstoken = mapbox_access_token,
+#             center = dict(
+#                 lat = 1.3485143093190572,
+#                 lon = 103.83056220992818,
+#             ),
+#             pitch = 0,
+#             zoom = 10,
+#             style = 'light'
+#         ),
+#     )
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------
+#     heatmap.update_traces(
+#         hoverlabel = dict(
+#             font = {'family': 'Roboto'}
+#         )
+#     )
 
-
-# colorscale = [[0, "#fff5f0"], [0.125, "#fee0d2"], [0.25, "#fcbba1"], [0.375, "#fc9272"], [0.5, "#fb6a4a"], [0.625, "#ef3b2c"], [0.75, "#cb181d"], [1, "#67000d"]],
-
-
-
-#---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
+#     return ui.plotly(heatmap)
 
 # from nicegui import ui
 
@@ -53,3 +56,16 @@
 #         ui.date(on_change=menu.close).bind_value(date)
         
 # ui.run(port = 8082)
+
+
+# def check_db_change():
+#     # Initiating Connection with DB
+#     # connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
+#     # df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
+#     df_test = pd.read_sql_query("SELECT * FROM sys.sys_config", connection2)
+#     final_df_len = len(df_test.index)
+#     print(initial_df_len)
+#     print(final_df_len)
+    
+#     if final_df_len != initial_df_len:
+#         update()

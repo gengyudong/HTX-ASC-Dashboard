@@ -1,29 +1,32 @@
 from nicegui import ui
 import pandas as pd
 from datetime import timedelta, timezone, date, datetime
-import pymysql
-
-# connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
-# df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
 
 def scam_typology_plot(df):
-    #   Preparing data for plot
+    #   Getting data for top 10 scam types (Same code as d1_topscamtypes.py)
+    df_scam_type_interim = df[['scam_type', 'amount_scammed']].copy()
+    df_scam_type_interim['scam_type'] = df_scam_type_interim['scam_type'].str.lower()
+    df_scam_type_interim['scam_type'] = df_scam_type_interim['scam_type'].replace('loan scan', 'loan scam')
+
+    df_scam_type_interim = df_scam_type_interim.groupby('scam_type').agg({'scam_type': 'count', 'amount_scammed': 'sum'})
+    df_scam_type_interim.columns = ['num_reports', 'total_amount_scammed']
+    df_scam_type_interim = df_scam_type_interim.rename_axis('scam_type').reset_index()
+    df_scam_type_interim['scam_type'] = df_scam_type_interim['scam_type'].str.title()
+
+    df_scam_type_interim = df_scam_type_interim.sort_values(by = 'num_reports', ascending = False)
+    top_scam_type_list = df_scam_type_interim.iloc[0:10]['scam_type'].values.tolist()
+
+
+    #   Data Cleaning
     df_scam_type = df[['date_assigned', 'scam_type']].copy()
     df_scam_type = df_scam_type.dropna(subset=['date_assigned', 'scam_type'])
     df_scam_type['scam_type'] = df_scam_type['scam_type'].str.lower()
     df_scam_type['scam_type'] = df_scam_type['scam_type'].replace('loan scan', 'loan scam')
     df_scam_type['scam_type'] = df_scam_type['scam_type'].str.title()
 
-    #   x-min & x-max date (Default viewport for graph)                       
-    max_date = date.today()
-    time = datetime.min.time()
-    default_max_datetime = datetime.combine(max_date, time)
-    default_max_xview = round(default_max_datetime.replace(tzinfo=timezone.utc).timestamp()) * 1000
+    df_scam_type = df_scam_type[df_scam_type["scam_type"].isin(top_scam_type_list)].reset_index()
 
-    min_date = max_date - timedelta(days = 90)
-    default_min_datetime = datetime.combine(min_date, time)
-    default_min_xview = round(default_min_datetime.replace(tzinfo=timezone.utc).timestamp()) * 1000
-
+    #   Group data according to scam type & date
     df_scam_type['date_assigned'] = pd.to_datetime(df_scam_type['date_assigned'])
     counts = df_scam_type.groupby(['scam_type', 'date_assigned']).size()
     df_scam_type = counts.reset_index(name='count')
@@ -31,11 +34,15 @@ def scam_typology_plot(df):
     current_scam_name = df_scam_type['scam_type'][0]
     current_date = df_scam_type['date_assigned'][0]
     start_date = round(current_date.replace(tzinfo=timezone.utc).timestamp()) * 1000
+
     iteration_count = len(df_scam_type.index)
     series_list = []
     data_dict = {}
     data_list = []
+                         
+    max_date = date.today()
 
+    #   Populating y-axis data
     for i in range(iteration_count):
         if df_scam_type['scam_type'][i] == current_scam_name:
             
@@ -46,11 +53,23 @@ def scam_typology_plot(df):
             data_list.append(df_scam_type['count'][i])
             current_date += timedelta(days = 1)
             
-        else:
+        if i == (iteration_count - 1):
             data_dict['name'] = current_scam_name
             data_dict['data'] = data_list
-            data_dict['dataLabels'] = {'enabled': True}
             series_list.append(data_dict)
+                
+        if df_scam_type['scam_type'][i] != current_scam_name:
+            while current_date != max_date:
+                data_list.append(0)   
+                current_date += timedelta(days = 1)
+            
+                if current_date == max_date:
+                    data_list.append(0)
+    
+            data_dict['name'] = current_scam_name
+            data_dict['data'] = data_list
+            series_list.append(data_dict)
+            
             data_list = []
             data_dict = {}
             
@@ -59,17 +78,16 @@ def scam_typology_plot(df):
             data_list.append((df_scam_type['count'][i]))
             current_date += timedelta(days = 1)
             
-            
     chart = ui.chart({
         'chart': {
             'type': 'spline',
+            'zoomType': 'xy',
             'backgroundColor': 'rgba(0,0,0,0)',
-            'margin': [50, 0, 0, 0],
         },
         
         'title': {
-            'text': 'Scam Typology Trend',
-            'margin': 50,
+            'text': 'Scam Typology Trend (Top 10)',
+            'margin': 20,
             'align': 'left',
             'style': {
                 'color': '#CED5DF',
@@ -99,15 +117,13 @@ def scam_typology_plot(df):
 
         'xAxis': {
             'labels': {
-                'style': {
-                    'color': '#CED5DF',
-                }
-            },
-            'min': default_min_xview,
-            'max': default_max_xview,
+                'format': '{value:%e %b}',
+                'style': {'color': '#CED5DF'}
+            }
         },
 
         'legend': {
+            'enabled': True,
             'layout': 'vertical',
             'align': 'right',
             'verticalAlign': 'middle',
@@ -146,7 +162,28 @@ def scam_typology_plot(df):
                 'buttonTheme': {
                     'width': 60
                 },
+                'inputStyle': {
+                    'color': '#CED5DF'
+                },
                 'selected': 0
+        },
+        
+        'navigator': {
+            'enabled': True
+        },
+        
+        'scrollbar': {
+            'enabled': False
+        },
+
+        'tooltip': {
+            'headerFormat': '<span style="font-size:10px">{point.key}</span><table>',
+            'pointFormat': '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y}</b></td></tr>',
+            'footerFormat': '</table>',
+            'shared': True,
+            'split': False,
+            'useHTML': True
         },
 
         'plotOptions': {
@@ -165,3 +202,4 @@ def scam_typology_plot(df):
     }, type = 'stockChart', extras = ['stock'])
 
     return chart
+
