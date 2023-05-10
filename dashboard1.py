@@ -6,6 +6,14 @@ import seaborn as sns
 from datetime import date, timedelta
 import plotly.graph_objects as go
 
+
+#additional imports for map 
+import geopandas as gpd
+import folium
+from folium import Tooltip
+import branca.colormap as cm
+from numpy import mean
+
 #   Style
 ui.add_head_html('''
     <style> 
@@ -40,7 +48,7 @@ box_2_style = '''
     border-style: solid; 
     border-width: 1px; 
     border-radius: 10px;
-    border-color: #132238; 
+    border-color: #132238;
     
     background-color: #132238;
     
@@ -89,24 +97,24 @@ df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
-with ui.left_drawer().style('background-color: #0e1c2f').props('width=250'):        
-    with ui.column():
-        with ui.element('div').style('margin: auto; font-family: Poppins'):
-            with ui.column(): 
-                with ui.row().classes('items-center').style('padding-bottom: 10px'):        
-                    ui.image('https://www.police.gov.sg/-/media/Spf/Archived/2021-10-28/SPF200/Homepage/Large-SPF-Logo.ashx?h=296&w=314&la=en&hash=5D66E7698CEFB5D7B9028D9905C03967').style('width: 7vw; height: auto; margin: auto')
-                    ui.label('ANTI-SCAM CENTRE').style('font-family: Poppins; font-size: 1.1vw; color: #CED5DF; font-weight: bold')
-                ui.button('Scam Cases', on_click = lambda: ui.open('http://127.0.0.1:8081')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
-                ui.button('Losses Prevented', on_click = lambda: ui.open('http://127.0.0.1:8082')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
-                ui.button('Banks', on_click = lambda: ui.open('http://127.0.0.1:8083')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
-                ui.button('Scam Trends', on_click = lambda: ui.open('http://127.0.0.1:8084')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
-                ui.button('Accounts Frozen', on_click = lambda: ui.open('http://127.0.0.1:8085')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
-                ui.button('Monthly Statistics', on_click = lambda: ui.open('http://127.0.0.1:8086')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
-                ui.button('Performance', on_click = lambda: ui.open('http://127.0.0.1:8087')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
+# with ui.left_drawer().style('background-color: #0e1c2f').props('width=250'):        
+#     with ui.column():
+#         with ui.element('div').style('margin: auto; font-family: Poppins'):
+#             with ui.column(): 
+#                 with ui.row().classes('items-center').style('padding-bottom: 10px'):        
+#                     ui.image('https://www.police.gov.sg/-/media/Spf/Archived/2021-10-28/SPF200/Homepage/Large-SPF-Logo.ashx?h=296&w=314&la=en&hash=5D66E7698CEFB5D7B9028D9905C03967').style('width: 7vw; height: auto; margin: auto')
+#                     ui.label('ANTI-SCAM CENTRE').style('font-family: Poppins; font-size: 1.1vw; color: #CED5DF; font-weight: bold')
+#                 ui.button('Scam Cases', on_click = lambda: ui.open('http://127.0.0.1:8081')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
+#                 ui.button('Losses Prevented', on_click = lambda: ui.open('http://127.0.0.1:8082')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
+#                 ui.button('Banks', on_click = lambda: ui.open('http://127.0.0.1:8083')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
+#                 ui.button('Scam Trends', on_click = lambda: ui.open('http://127.0.0.1:8084')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
+#                 ui.button('Accounts Frozen', on_click = lambda: ui.open('http://127.0.0.1:8085')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
+#                 ui.button('Monthly Statistics', on_click = lambda: ui.open('http://127.0.0.1:8086')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
+#                 ui.button('Performance', on_click = lambda: ui.open('http://127.0.0.1:8087')).props('unelevated color = accent no-caps = True').style('font-size: 1vw')
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------#             
 
-with ui.row().style('width: 100%'):
+with ui.row().style('width: 100vw'):
     
     #   Box 1: Scam Count  
     with ui.element('div').style(box_1_style):
@@ -246,57 +254,32 @@ with ui.row().style('width: 100%'):
         hq_list = df_division['name'].tolist()
         scam_count_list = df_division['No_of_cases_per_division'].tolist()
         
-        # mapbox_access_token = 'pk.eyJ1IjoiZ2VuZ3l1ZG9uZyIsImEiOiJjbGdkcnhocXoxdzFwM2RvNnB3YmU0dm51In0.t_EXRVIhGE46Fq-3nnq_Uw'
-        
+
+        #   Centering map
+        lat_list_float = [float(x) for x in lat_list]
+        long_list_float = [float(x) for x in long_list]
+        y_map= mean(lat_list_float)
+        x_map= mean(long_list_float)
+
+        #   Creating Map
+        mymap = folium.Map(location=[y_map, x_map], zoom_start=11,tiles=None)
+        folium.TileLayer('CartoDB positron',name="Light Map",control=False).add_to(mymap)
+
         #   Plotting Scattermapbox
-        heatmap = go.Figure()
-        heatmap.add_trace(go.Scattermapbox(
-            lat = lat_list,
-            lon = long_list,
-            mode = 'markers',
-  
-            marker = go.scattermapbox.Marker(
-                autocolorscale = False,
-                cauto = True,
-                cmin = 0,
-                # colorscale = [[0, "#fff5f0"], [0.125, "#fee0d2"], [0.25, "#fcbba1"], [0.375, "#fc9272"], [0.5, "#fb6a4a"], [0.625, "#ef3b2c"], [0.75, "#cb181d"], [1, "#67000d"]],
-                colorscale = [[0, "#BBD3F2"], [0.125, "#95B5DE"], [0.25, "#6E96CA"], [0.375, "#5B87C0"], [0.5, "#4777B6"], [0.625, "#3468AC"], [0.75, "#2A60A7"], [1, "#2058A2"]],    
-                color = scam_count_list,
-                
-                size = scam_count_list,
-                sizeref = 3,
-                sizemode = 'area'
-            ), 
-            
-            text = [hq_list[i] + '<br>' + 'Scam Cases: ' + str('{:,}'.format(scam_count_list[i])) for i in range(len(hq_list))],
-            hoverinfo = 'text',    
-        )) 
+        for i in range(0, len(lat_list)):
+            t = hq_list[i] + '<br>'+ str(scam_count_list[i])
+            folium.Circle(
+                location = [lat_list[i],long_list[i]],
+                tooltip = Tooltip(t, style = 'font-size:15px'),
+                radius = float(scam_count_list[i])*0.3,
+                fill = True,
+                fill_opacity = float(scam_count_list[i])*0.00005,
+                color = "#115fd4",
 
-        heatmap.update_layout(
-            margin = {'l': 0, 'r': 0, 't': 0, 'b': 0},
-            autosize = True, 
-            mapbox = dict(
-                # accesstoken = mapbox_access_token,
-                center = dict(
-                    lat = 1.3485143093190572,
-                    lon = 103.83056220992818,
-                ),
-                pitch = 0,
-                zoom = 10,
-                style = 'light'
-            ),
-        )
+                fill_color = "#115fd4"
+            ) .add_to(mymap)
 
-        heatmap.update_traces(
-            hoverlabel = dict(
-                font = {'family': 'Poppins'}
-            )
-        )
-
-        ui.plotly(heatmap).style('margin: auto; width: 100%; height: 110%; border-radius: 10px')
-        
-    
-    
+        ui.html(mymap._repr_html_())
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------#             
 
 with ui.row().style('width: 100%'):
@@ -329,8 +312,6 @@ with ui.row().style('width: 100%'):
         
         weeks = df_week['date'].tolist()
         no_of_cases_week = df_week['no_of_cases_per_week'].tolist()
-        
-
         
         ##  Plotting Graph
         scam_count_bar_graph = go.Figure()

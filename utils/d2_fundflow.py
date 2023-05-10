@@ -1,4 +1,4 @@
-import nicegui as ui
+from nicegui import ui
 import pandas as pd
 
 def fund_flow_plot(df):
@@ -15,19 +15,43 @@ def fund_flow_plot(df):
 
     chart = ui.chart({
             'title': {
-                'enabled': True,
-                'text': 'Breakdown of Fund Flow',
+                'text': None,
             },
-            'chart': {'type': 'bar'},
-            'xAxis': {'categories': ['L-L', 'L-O', 'O-L', 'O-O']},
+            'chart': {'type': 'bar',
+                      'backgroundColor': 'rgba(0,0,0,0)',},
+            'xAxis': {'categories': ['L-L', 'L-O', 'O-L', 'O-O'],
+                      'labels':{
+                            'style': {'color': '#CED5DF'}
+                        }
+                    },
+            'yAxis':{
+                'title': {
+                    'text': 'Number of Cases',
+                    'style': {
+                        'color': '#CED5DF'
+                    },
+                },
+                'labels':{
+                            'style': {'color': '#CED5DF'}
+                        },
+                'gridLineDashStyle': 'dash',
+            },
             'series': [{'data': fundFlowCount.to_list(),
-                    'dataLabels':{
-                            'enabled': True
-                    }
+                        # 'color': 'rgba(52, 181, 213, 0.7)',
+                        'dataLabels':{
+                            'enabled': True,
+                            'style': {'color': '#CED5DF'},
+                        },
+                        'borderWidth':0,
                     }],
             'legend':{
                 'enabled': False
-            }
+            },
+            'credits': {
+                'enabled': False
+            },
         }).classes('w-full h-64')
-
+    
     return chart
+
+

@@ -1,5 +1,6 @@
 from nicegui import ui
 
+
 def fund_recovery_plot(df):
     df_amount_recovery = df[['amount_scammed', 'latest_balance_seized']].copy()
     df_amount_recovery = df_amount_recovery.fillna(0)
@@ -30,7 +31,7 @@ def fund_recovery_plot(df):
                 },
                 
                 'title': {
-                    'text': f'Scam Amount <br> ${amount_scammed:,} <br><br><br> Recovered Amount <br> ${amount_recover:,}',
+                    'text': f'Scam Amount <br> ${amount_scammed:,} <br><br><b>Fund Recovery</b><br><br> Recovered Amount <br> ${amount_recover:,}',
                     'align': 'center',
                     'verticalAlign': 'middle',
                     'style': {
@@ -56,7 +57,9 @@ def fund_recovery_plot(df):
                         'borderColor': None,
                         'borderWidth': 8,
                         'innerSize': '98%',
-                    }
+                        'size': '100%',
+                    },
+                    
                 },
 
                 'tooltip': {
@@ -77,8 +80,9 @@ def fund_recovery_plot(df):
                                 'name': 'Loss',
                                 'y': amount_scammed_percentage,
                                 'color': 'rgba(255, 44, 104, 0.7)',
-                            }
-                        ]
+                            },
+                        ],
+  
                     }
                 ],
             })

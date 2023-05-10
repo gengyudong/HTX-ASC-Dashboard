@@ -1,31 +1,85 @@
-import pandas
+import numpy as np
+import pandas as pd
 from nicegui import ui
 
-def bank_performance_grid(df):
-    df['reaction_time'] =  df['datetime_bank_account_frozen']- df['datetime_production_order_served']
-    groupedBank = df.groupby('account_bank')
 
+
+### Data Processing 
+def bank_performance_table_dropdown(df):
+
+    df = df[[ 'account_bank', 'datetime_production_order_served', 
+             'datetime_bank_account_frozen', 'amount_scammed']].copy()
+    #   Data cleaning 
+    df['account_bank'] = df['account_bank'].str.upper()
+
+    #   Calculations
+    groupedBank = df.groupby('account_bank')
     agg_function = {'amount_scammed':['min', 'max', 'sum', 'mean'],
-                    'reaction_time': ['min', 'max', 'sum', 'mean'],
                     'datetime_production_order_served': 'count',
                     }
-
+    global stats 
     stats = groupedBank.agg(agg_function)
     stats.columns = ['-'.join(col) for col in stats.columns.values]
-    banks = stats.index.to_list()
+    stats = np.round(stats.reset_index(), decimals=2)
+
+    #   Preparing Data to display
+    to_display_df = stats[['account_bank', 'datetime_production_order_served-count','amount_scammed-mean']]
+    to_display_df = to_display_df.rename(columns = {
+                                    'account_bank': "Bank", 
+                                    'datetime_production_order_served-count': 'Production Orders Sent',
+                                    'amount_scammed-mean':'Amount Scammed',
+                                    })
+
+    ###     Grid
+    grid_style = '''
+        --ag-header-background-color:  #03002e;
+        --ag-header-foreground-color: #CED5DF;
+        
+        --ag-background-color: rgb(0,0,0,0);
+        --ag-foreground-color: #CED5DF;
+        --ag-odd-row-background-color: #03002e;
+        --ag-row-hover-color:rgb(192, 229, 249, 0.2);
+    '''
 
 
-    #implement a sort later
+    grid = ui.aggrid.from_pandas(to_display_df).style(grid_style)
+    grid.options['columnDefs'][0].update({'filter':'agTextColumnFilter'})
+    grid.options['columnDefs'][1].update({'filter':'agNumberColumnFilter',
+                                        'filterParams':{
+                                            'filterOptions':['lessThan', 
+                                                            'lessThanOrEqual', 
+                                                            'greaterThan', 
+                                                            'greaterThanOrEqual',
+                                                            'inRange']}
+                                        }
+                                        )
+    grid.options['columnDefs'][2].update({'filter':'agNumberColumnFilter',
+                                        'filterParams':{
+                                            'filterOptions':['lessThan', 
+                                                            'lessThanOrEqual', 
+                                                            'greaterThan', 
+                                                            'greaterThanOrEqual',
+                                                            'inRange']},
+                                        # 'valueFormatter': (lambda x: '$'+x.data.amount_scammed-mean) #does nothing
+                                            })
+    # print(grid.options)
 
-    dropdown = ui.select(['avg', 'min', 'sum', 'mean'], value='mean') #later rename sum to Total
 
-
-    #   Bank's Performance Table
-
-    grid = ui.aggrid.from_pandas(stats).classes('max-h-40')
+    grid.options.update(
+        {'defaultColDef':{
+            'sortable':True, 
+            'floatingFilter': True,
+            'suppressMenu' : True,
+            },
+            },)
     
+
+    ######################
     return grid
-    
 
+def update(x, grid):
 
+    for i in range(len(stats.index)):
+        grid.options['rowData'][i]['Amount Scammed'] = stats['amount_scammed-'+x][i]
+    grid.update()
 
