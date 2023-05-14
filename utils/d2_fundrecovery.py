@@ -48,6 +48,7 @@ def fund_recovery_plot(df):
 
                 'plotOptions': {
                     'series': {
+                        'name': 'Funds',
                         'dataLabels': {
                             'enabled': True,
                             'format': '{point.name}: {point.y:.1f}%'

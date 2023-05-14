@@ -1,33 +1,16 @@
 from nicegui import ui
-import pandas as pd
-async def add_data():
-    await ui.run_javascript(
-        '''return `
-			x: ${this.x}, 
-			y: ${this.y}
-		`
-		'''
-    )
-
 
 def fund_flow_plot(df):
     ###     Data Processing 
-    fundFlowDf = df[['overseas_local', 'amount_scammed', 'amount_transcated']].copy()
-    fundFlowSum = fundFlowDf.groupby('overseas_local').sum().round(2)
+    fundFlowDf = df[['overseas_local']]
     fundFlowCount = fundFlowDf.groupby('overseas_local').size()
-    fundFlowSum = fundFlowSum['amount_scammed']+fundFlowSum['amount_transcated']
 
-    #   data cleaning
-    fundFlowSum['L-L']+=fundFlowSum['L-l']
-    fundFlowSum = fundFlowSum.drop('L-l')
-
+    #   settling wrong entry
     fundFlowCount['L-L']+=fundFlowCount['L-l']
     fundFlowCount = fundFlowCount.drop('L-l')
 
     #   convert to list
-    to_display_df = pd.concat([fundFlowSum, fundFlowCount], axis = 1)
-    to_display_df.columns = ['y', 'count']
-    result = to_display_df.to_json(orient="records")
+    fundFlowCount.to_list()
 
     chart = ui.chart({
             'chart': {'type': 'bar',
@@ -44,17 +27,14 @@ def fund_flow_plot(df):
                 }
             },
             
-            'xAxis': {
-                'categories': ['L-L', 'L-O', 'O-L', 'O-O'],
+            'xAxis': {'categories': ['L-L', 'L-O', 'O-L', 'O-O'],
                       'labels':{
                             'style': {'color': '#CED5DF'}
                         }
                     },
-
-            
             'yAxis':{
                 'title': {
-                    'text': 'Amount of Funds ($)',
+                    'text': 'Number of Cases',
                     'style': {
                         'color': '#CED5DF'
                     },
@@ -64,25 +44,14 @@ def fund_flow_plot(df):
                         },
                 'gridLineDashStyle': 'dash',
             },
-
-
-            'series': [{
-                'name': 'Funds',
-                'data': result,
+            'series': [{'data': fundFlowCount.to_list(),
+                        # 'color': 'rgba(52, 181, 213, 0.7)',
                         'dataLabels':{
                             'enabled': True,
                             'style': {'color': '#CED5DF'},
                         },
                         'borderWidth':0,
                     }],
-
-            'tooltip':{
-                'formatter':""" return `
-                count: ${this.count}, 
-                sum: ${this.y}, 
-		        `"""
-            },
-
             'legend':{
                 'enabled': False
             },
@@ -92,3 +61,5 @@ def fund_flow_plot(df):
         }).classes('w-full h-64')
     
     return chart
+
+

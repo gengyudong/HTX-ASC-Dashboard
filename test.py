@@ -1,19 +1,24 @@
 from nicegui import ui
+import js2py
 
-a = 'Hello World'
-b = 'hi'
+def run_js_function(js_function):
+    context = js2py.EvalJs()
+    context.execute(js_function)
+    return context
 
-def change_value():
-    global a
-    a = b
-    
-    
-ui.button('press to change value', on_click=lambda: result.set_text(b))
+js_function = """
+    function add(a,b){
+        return a+b;
+    }
+"""
 
-result = ui.label(a)
+context = run_js_function(js_function)
+result = context.add(2,3)
 
-if result.text == 'hi':
-    ui.label('it worked')
-
-
+async def add_data():
+    await ui.run_javascript(
+        '''
+		'''
+    )
+print(add_data())
 ui.run(port = 8082)

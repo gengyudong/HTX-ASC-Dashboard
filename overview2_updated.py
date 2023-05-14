@@ -54,13 +54,14 @@ def d2_content():
         margin: 10px;
     '''
 
-    ui.video('/media/jellyfish-121604.mp4', controls = False, autoplay=True, loop=True).style(bg_video)
+    # ui.video('/media/jellyfish-121604.mp4', controls = False, autoplay=True, loop=True).style(bg_video)
+    ui.image('/media/neon_background1.jpg').style(bg_video)
     
-    # connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
-    # df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
+    connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
+    df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
     
-    connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
-    df = pd.read_sql_query("SELECT * FROM sys.scam_management_system", connection2)
+    # connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
+    # df = pd.read_sql_query("SELECT * FROM sys.scam_management_system", connection2)
 
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
@@ -85,7 +86,7 @@ def d2_content():
         with ui.element('div').style(div_general_style).style('width: 30%'):
             with ui.row().classes('justify-between items-center').style('flex-wrap: nowrap;'):
                 ui.label("Bank's Performance").style(label_style)
-                ui.select(['min', 'max', 'sum', 'mean'], value='mean', on_change = lambda x:update(x.value, grid)).style('background-color: #87c6e6 !important; border-radius:5px;').classes('px-3 w-28')
+                ui.select(['min', 'max', 'sum', 'mean'], value='mean', on_change = lambda x:change_stats(x.value, grid)).style('background-color: #87c6e6 !important; border-radius:5px;').classes('px-3 w-28')
             grid = bank_performance_table_dropdown(df).style('height:85%;')
                 # .style('height: 50vh;') #Cant get the height correct on differnet size screens  
             
@@ -106,5 +107,5 @@ d2_content()
 def update():
     d2_content.refresh()
 
-ui.timer(20.0, update)
+# ui.timer(20.0, update)
 ui.run()

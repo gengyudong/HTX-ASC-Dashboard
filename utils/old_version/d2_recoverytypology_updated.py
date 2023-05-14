@@ -34,11 +34,10 @@ def recovery_by_typology_plot(df):
 
     for scam in groupedDf.index:
         if groupedDf.at[scam,'latest_balance_seized'] >= groupedDf.at[scam,'amount_scammed']:
-            groupedDf.at[scam, 'recovery'] = groupedDf.at[scam,'amount_scammed'].round(2)
+            groupedDf.at[scam, 'recovery'] = groupedDf.at[scam,'amount_scammed']
         else:
-            groupedDf.at[scam, 'recovery'] = groupedDf.at[scam,'latest_balance_seized'].round(2)
+            groupedDf.at[scam, 'recovery'] = groupedDf.at[scam,'latest_balance_seized']
 
-    groupedDf = groupedDf.sort_values(by = ['recovery'], ascending=False)  
     scam_list = groupedDf.index.to_list()
     recovery_list = groupedDf.loc[:,'recovery'].to_list()
 
@@ -64,15 +63,19 @@ def recovery_by_typology_plot(df):
                 'type': 'category',
                 'categories': scam_list,
                 'min': 0,
-                'max': 9,
+                'max': 4,
                 'tickLength': 0,
                 'labels':{
-                    'style': {
-                        'color': '#CED5DF',
+                    'style': {'color': '#CED5DF',
+                            #   'font-size':'1.5vh',
                               }
                 },
                 'scrollbar':{
                 'enabled':True,
+                # 'barBorderRadius': 1,
+                # 'rifleColor': None,
+                # 'trackBackgroundColor': 'rgba(0,0,0,0)',
+                # 'showFull':False, 
             },
             },
             'yAxis':{
