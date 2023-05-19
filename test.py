@@ -1,24 +1,18 @@
 from nicegui import ui
-import js2py
 
-def run_js_function(js_function):
-    context = js2py.EvalJs()
-    context.execute(js_function)
-    return context
+async def alert():
+    await ui.run_javascript('alert("Hello!")', respond=False)
 
-js_function = """
-    function add(a,b){
-        return a+b;
-    }
-"""
+async def get_date():
+    time = await ui.run_javascript('Date()')
+    ui.notify(f'Browser time: {time}')
 
-context = run_js_function(js_function)
-result = context.add(2,3)
+async def access_elements():
+    await ui.run_javascript(f'getElement({label.id}).innerText += " Hello!"')
 
-async def add_data():
-    await ui.run_javascript(
-        '''
-		'''
-    )
-print(add_data())
-ui.run(port = 8082)
+ui.button('fire and forget', on_click=alert)
+ui.button('receive result', on_click=get_date)
+ui.button('access elements', on_click=access_elements)
+label = ui.label()
+
+ui.run()

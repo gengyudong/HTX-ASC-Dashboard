@@ -1,13 +1,20 @@
 from nicegui import ui
 import pandas as pd
-async def add_data():
+from highcharts_core import highcharts
+
+
+async def handleBarClick(event):
     await ui.run_javascript(
-        '''return `
-			x: ${this.x}, 
-			y: ${this.y}
-		`
-		'''
+        "alert('hello')"
     )
+    print("Maybe this would work")
+# def handleBarClick(event):
+#     print("it clicked")
+#     ui.run_javascript('alert("javascript ran")')
+
+
+def on_chart_click(click_data):
+    print(click_data)
 
 
 def fund_flow_plot(df):
@@ -24,14 +31,29 @@ def fund_flow_plot(df):
     fundFlowCount['L-L']+=fundFlowCount['L-l']
     fundFlowCount = fundFlowCount.drop('L-l')
 
-    #   convert to list
-    to_display_df = pd.concat([fundFlowSum, fundFlowCount], axis = 1)
-    to_display_df.columns = ['y', 'count']
-    result = to_display_df.to_json(orient="records")
+    #   convert to list and add fullName 
+    fullName = pd.Series({'L-L':'Local-Local', 'L-O':'Local-Overseas', 'O-L':'Overseas-Local', 'O-O':'Overseas-Overseas'})
+    to_display_df = pd.concat([fullName, fundFlowSum, fundFlowCount], axis = 1)
+    to_display_df.columns = ['name','y', 'count']
+    results = to_display_df.to_dict(orient="records")
+    # my_chart = highcharts.Chart.from_pandas(results,
+    #                                     property_map = {
+    #                                         'x': 'name',
+    #                                         'y': 'y',
+    #                                         'id': 'id'
+    #                                     },
+    #                                     series_type = 'line')
+
+
+
 
     chart = ui.chart({
             'chart': {'type': 'bar',
-                      'backgroundColor': 'rgba(0,0,0,0)',},
+                      'backgroundColor': 'rgba(0,0,0,0)',
+                      },
+            'events':{
+                        'click': 'function(event){console.log("Hola");}'
+                    },
             
             'title': {
                 'text': 'Breakdown of Fund Flow',
@@ -40,21 +62,22 @@ def fund_flow_plot(df):
                 'style': {
                     'color': '#CED5DF',
                     'fontWeight': 'bold',
-                    'fontFamily': 'Michroma'
+                    'fontFamily': 'Michroma',
                 }
             },
             
             'xAxis': {
+                'type': 'category',
                 'categories': ['L-L', 'L-O', 'O-L', 'O-O'],
-                      'labels':{
-                            'style': {'color': '#CED5DF'}
-                        }
+                'labels':{
+                    'style': {'color': '#CED5DF'},
+                },
                     },
 
             
             'yAxis':{
                 'title': {
-                    'text': 'Amount of Funds ($)',
+                    'text': 'Amount of Funds',
                     'style': {
                         'color': '#CED5DF'
                     },
@@ -68,27 +91,53 @@ def fund_flow_plot(df):
 
             'series': [{
                 'name': 'Funds',
-                'data': result,
-                        'dataLabels':{
-                            'enabled': True,
-                            'style': {'color': '#CED5DF'},
-                        },
-                        'borderWidth':0,
+                'data': results,
+                'dataLabels':{
+                    'enabled': True,
+                    'style': {'color': '#CED5DF'},
+                    'format': '${point.y:,.2f}',
+                },
+                'borderWidth':0,
+                'dataGrouping': False,
+                # 'events': {
+                #     'click': handleBarClick,
+                # },
                     }],
 
             'tooltip':{
-                'formatter':""" return `
-                count: ${this.count}, 
-                sum: ${this.y}, 
-		        `"""
+                'useHTML': True,
+                'headerFormat': '<table><tr><th>{point.key}</th></tr>',
+                'pointFormat': '<tr><td>Amount of Funds: {point.y}</td></tr>' +
+                    '<tr><td>Number of Cases: {point.count}</td></tr>',
+                'footerFormat': '</table>',
+                'valueDecimals': 2,
+                'valuePrefix': '$',
+            },
+
+            'plotOptions':{
+                'series':{
+                    'bar': {
+                        'color': '#db3eb1',
+                        'shadow': {
+
+                        }
+                    },
+                    
+                    'point':{
+                    'events':{
+                        'click':"function(){alert('hello');}"
+                    },
+                    },
+                },
             },
 
             'legend':{
-                'enabled': False
+                'enabled': False,
             },
             'credits': {
-                'enabled': False
+                'enabled': False,
             },
         }).classes('w-full h-64')
-    
+    print(chart.options)
+    # chart.on_click(on_chart_click)
     return chart

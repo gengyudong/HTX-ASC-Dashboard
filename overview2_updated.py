@@ -1,6 +1,7 @@
 from nicegui import app, ui
 import pymysql
 import pandas as pd
+import js2py
 
 from utils.d2_fundrecovery import *
 from utils.d2_recoverytypology import *
@@ -8,6 +9,7 @@ from utils.d2_fundflow import *
 from utils.d2_bankperformance import *
 from utils.d2_recoverytrend import *
 
+# @ui.page('/dashboard2')
 @ui.refreshable
 def d2_content():
     app.add_static_files('/media', 'media')
@@ -67,9 +69,14 @@ def d2_content():
 
     with ui.row().style('height: 60vh; width: 100%; flex-wrap: nowrap'):
         
+        
         #   Recovery by Typology Plot
-        with ui.element('div').style(div_general_style).style('height: 100%; width: 30%'):
+        division = ui.element('div')
+        with division.style(div_general_style).style('height: 100%; width: 30%'):
             recovery_by_typology_plot(df).style('height: 100%')
+            # ui.add_body_html("""
+            # <script>document.addEventListener('DOMContentLoaded', function () {
+            # const chart = Highcharts.chart('"""+str(division.id)+ "', {" + recovery_by_typology_plot(df))
 
         with ui.column().style('width: 40%; height:100%; flex-wrap: nowrap; gap:0rem;').classes('items-center'):
             #   ASC Logo
@@ -100,9 +107,18 @@ def d2_content():
         
         #   Breakdown of Fund Flow Plot
         with ui.element('div').style(div_general_style).style('width: 30%'):
-            fund_flow_plot(df).style('height: 100%; width: 100%')
+            ffp = fund_flow_plot(df).style('height: 100%; width: 100%')
+            # .on('click', lambda: ui.notify('Not sure how '))
+    
+    # async def handleBarClick():
+    #     await 
 
-d2_content()           
+    print(type(division.id))
+
+    
+
+d2_content()
+           
 
 def update():
     d2_content.refresh()
