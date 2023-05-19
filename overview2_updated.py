@@ -1,6 +1,7 @@
 from nicegui import app, ui
 import pymysql
 import pandas as pd
+import js2py
 
 from utils.d2_fundrecovery import *
 from utils.d2_recoverytypology import *
@@ -8,6 +9,7 @@ from utils.d2_fundflow import *
 from utils.d2_bankperformance import *
 from utils.d2_recoverytrend import *
 
+# @ui.page('/dashboard2')
 @ui.refreshable
 def d2_content():
     app.add_static_files('/media', 'media')
@@ -54,21 +56,27 @@ def d2_content():
         margin: 10px;
     '''
 
-    ui.video('/media/jellyfish-121604.mp4', controls = False, autoplay=True, loop=True).style(bg_video)
+    # ui.video('/media/jellyfish-121604.mp4', controls = False, autoplay=True, loop=True).style(bg_video)
+    ui.image('/media/neon_background1.jpg').style(bg_video)
     
-    # connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
-    # df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
+    connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
+    df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
     
-    connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
-    df = pd.read_sql_query("SELECT * FROM sys.scam_management_system", connection2)
+    # connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
+    # df = pd.read_sql_query("SELECT * FROM sys.scam_management_system", connection2)
 
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
     with ui.row().style('height: 60vh; width: 100%; flex-wrap: nowrap'):
         
+        
         #   Recovery by Typology Plot
-        with ui.element('div').style(div_general_style).style('height: 100%; width: 30%'):
+        division = ui.element('div')
+        with division.style(div_general_style).style('height: 100%; width: 30%'):
             recovery_by_typology_plot(df).style('height: 100%')
+            # ui.add_body_html("""
+            # <script>document.addEventListener('DOMContentLoaded', function () {
+            # const chart = Highcharts.chart('"""+str(division.id)+ "', {" + recovery_by_typology_plot(df))
 
         with ui.column().style('width: 40%; height:100%; flex-wrap: nowrap; gap:0rem;').classes('items-center'):
             #   ASC Logo
@@ -85,7 +93,7 @@ def d2_content():
         with ui.element('div').style(div_general_style).style('width: 30%'):
             with ui.row().classes('justify-between items-center').style('flex-wrap: nowrap;'):
                 ui.label("Bank's Performance").style(label_style)
-                ui.select(['min', 'max', 'sum', 'mean'], value='mean', on_change = lambda x:update(x.value, grid)).style('background-color: #87c6e6 !important; border-radius:5px;').classes('px-3 w-28')
+                ui.select(['min', 'max', 'sum', 'mean'], value='mean', on_change = lambda x:change_stats(x.value, grid)).style('background-color: #87c6e6 !important; border-radius:5px;').classes('px-3 w-28')
             grid = bank_performance_table_dropdown(df).style('height:85%;')
                 # .style('height: 50vh;') #Cant get the height correct on differnet size screens  
             
@@ -99,12 +107,21 @@ def d2_content():
         
         #   Breakdown of Fund Flow Plot
         with ui.element('div').style(div_general_style).style('width: 30%'):
-            fund_flow_plot(df).style('height: 100%; width: 100%')
+            ffp = fund_flow_plot(df).style('height: 100%; width: 100%')
+            # .on('click', lambda: ui.notify('Not sure how '))
+    
+    # async def handleBarClick():
+    #     await 
 
-d2_content()           
+    print(type(division.id))
+
+    
+
+d2_content()
+           
 
 def update():
     d2_content.refresh()
 
-ui.timer(20.0, update)
+# ui.timer(20.0, update)
 ui.run()

@@ -1,32 +1,83 @@
 from nicegui import ui
 import pandas as pd
+from highcharts_core import highcharts
+
+
+async def handleBarClick(event):
+    await ui.run_javascript(
+        "alert('hello')"
+    )
+    print("Maybe this would work")
+# def handleBarClick(event):
+#     print("it clicked")
+#     ui.run_javascript('alert("javascript ran")')
+
+
+def on_chart_click(click_data):
+    print(click_data)
+
 
 def fund_flow_plot(df):
     ###     Data Processing 
-    fundFlowDf = df[['overseas_local']]
+    fundFlowDf = df[['overseas_local', 'amount_scammed', 'amount_transcated']].copy()
+    fundFlowSum = fundFlowDf.groupby('overseas_local').sum().round(2)
     fundFlowCount = fundFlowDf.groupby('overseas_local').size()
+    fundFlowSum = fundFlowSum['amount_scammed']+fundFlowSum['amount_transcated']
 
-    #   settling wrong entry
+    #   data cleaning
+    fundFlowSum['L-L']+=fundFlowSum['L-l']
+    fundFlowSum = fundFlowSum.drop('L-l')
+
     fundFlowCount['L-L']+=fundFlowCount['L-l']
     fundFlowCount = fundFlowCount.drop('L-l')
 
-    #   convert to list
-    fundFlowCount.to_list()
+    #   convert to list and add fullName 
+    fullName = pd.Series({'L-L':'Local-Local', 'L-O':'Local-Overseas', 'O-L':'Overseas-Local', 'O-O':'Overseas-Overseas'})
+    to_display_df = pd.concat([fullName, fundFlowSum, fundFlowCount], axis = 1)
+    to_display_df.columns = ['name','y', 'count']
+    results = to_display_df.to_dict(orient="records")
+    # my_chart = highcharts.Chart.from_pandas(results,
+    #                                     property_map = {
+    #                                         'x': 'name',
+    #                                         'y': 'y',
+    #                                         'id': 'id'
+    #                                     },
+    #                                     series_type = 'line')
+
+
+
 
     chart = ui.chart({
-            'title': {
-                'text': None,
-            },
             'chart': {'type': 'bar',
-                      'backgroundColor': 'rgba(0,0,0,0)',},
-            'xAxis': {'categories': ['L-L', 'L-O', 'O-L', 'O-O'],
-                      'labels':{
-                            'style': {'color': '#CED5DF'}
-                        }
+                      'backgroundColor': 'rgba(0,0,0,0)',
+                      },
+            'events':{
+                        'click': 'function(event){console.log("Hola");}'
                     },
+            
+            'title': {
+                'text': 'Breakdown of Fund Flow',
+                'margin': 20,
+                'align': 'left',
+                'style': {
+                    'color': '#CED5DF',
+                    'fontWeight': 'bold',
+                    'fontFamily': 'Michroma',
+                }
+            },
+            
+            'xAxis': {
+                'type': 'category',
+                'categories': ['L-L', 'L-O', 'O-L', 'O-O'],
+                'labels':{
+                    'style': {'color': '#CED5DF'},
+                },
+                    },
+
+            
             'yAxis':{
                 'title': {
-                    'text': 'Number of Cases',
+                    'text': 'Amount of Funds',
                     'style': {
                         'color': '#CED5DF'
                     },
@@ -36,22 +87,57 @@ def fund_flow_plot(df):
                         },
                 'gridLineDashStyle': 'dash',
             },
-            'series': [{'data': fundFlowCount.to_list(),
-                        # 'color': 'rgba(52, 181, 213, 0.7)',
-                        'dataLabels':{
-                            'enabled': True,
-                            'style': {'color': '#CED5DF'},
-                        },
-                        'borderWidth':0,
+
+
+            'series': [{
+                'name': 'Funds',
+                'data': results,
+                'dataLabels':{
+                    'enabled': True,
+                    'style': {'color': '#CED5DF'},
+                    'format': '${point.y:,.2f}',
+                },
+                'borderWidth':0,
+                'dataGrouping': False,
+                # 'events': {
+                #     'click': handleBarClick,
+                # },
                     }],
+
+            'tooltip':{
+                'useHTML': True,
+                'headerFormat': '<table><tr><th>{point.key}</th></tr>',
+                'pointFormat': '<tr><td>Amount of Funds: {point.y}</td></tr>' +
+                    '<tr><td>Number of Cases: {point.count}</td></tr>',
+                'footerFormat': '</table>',
+                'valueDecimals': 2,
+                'valuePrefix': '$',
+            },
+
+            'plotOptions':{
+                'series':{
+                    'bar': {
+                        'color': '#db3eb1',
+                        'shadow': {
+
+                        }
+                    },
+                    
+                    'point':{
+                    'events':{
+                        'click':"function(){alert('hello');}"
+                    },
+                    },
+                },
+            },
+
             'legend':{
-                'enabled': False
+                'enabled': False,
             },
             'credits': {
-                'enabled': False
+                'enabled': False,
             },
         }).classes('w-full h-64')
-    
+    print(chart.options)
+    # chart.on_click(on_chart_click)
     return chart
-
-

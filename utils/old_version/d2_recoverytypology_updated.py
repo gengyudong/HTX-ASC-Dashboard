@@ -38,7 +38,6 @@ def recovery_by_typology_plot(df):
         else:
             groupedDf.at[scam, 'recovery'] = groupedDf.at[scam,'latest_balance_seized']
 
-    groupedDf = groupedDf.sort_values(by = ['recovery'], ascending=False)  
     scam_list = groupedDf.index.to_list()
     recovery_list = groupedDf.loc[:,'recovery'].to_list()
 
@@ -64,15 +63,19 @@ def recovery_by_typology_plot(df):
                 'type': 'category',
                 'categories': scam_list,
                 'min': 0,
-                'max': 9,
+                'max': 4,
                 'tickLength': 0,
                 'labels':{
-                    'style': {
-                        'color': '#CED5DF',
+                    'style': {'color': '#CED5DF',
+                            #   'font-size':'1.5vh',
                               }
                 },
                 'scrollbar':{
                 'enabled':True,
+                # 'barBorderRadius': 1,
+                # 'rifleColor': None,
+                # 'trackBackgroundColor': 'rgba(0,0,0,0)',
+                # 'showFull':False, 
             },
             },
             'yAxis':{
@@ -100,12 +103,6 @@ def recovery_by_typology_plot(df):
                     'borderWidth':0,
                 }
             },
-
-            'tooltip':{
-                'valueDecimals': 2,
-                'valuePrefix': '$',
-            },
-
             'legend': {
                 'enabled': 'false'
             },
@@ -118,8 +115,6 @@ def recovery_by_typology_plot(df):
                         # 'color': 'rgba(52, 181, 213, 0.7)',
                     'dataLabels':{
                             'enabled': True,
-                            'format': '${point.y:,.2f}',
-                            
             #                 'formatter':""" function () {
             #     return this.value + ' units';
             # }"""
