@@ -12,7 +12,15 @@ def scam_typology_plot(df):
     df_scam_type_interim.columns = ['num_reports', 'total_amount_scammed']
     df_scam_type_interim = df_scam_type_interim.rename_axis('scam_type').reset_index()
     df_scam_type_interim['scam_type'] = df_scam_type_interim['scam_type'].str.title()
-
+    df_scam_type_interim['scam_type'] = df_scam_type_interim['scam_type'].replace({
+        'Bank Phishing Sms Scam': 'Bank Phishing SMS Scam',
+        'Bec Scam': 'BEC Scam',
+        'Cois': 'COIS',
+        'Fgps': 'FGPS',
+        'Gois': 'GOIS',
+        'Osss': 'OSSS',
+        'Non-Bank Phishing Sms Scam': 'Non-Bank Phishing SMS Scam'})
+    
     df_scam_type_interim = df_scam_type_interim.sort_values(by = 'num_reports', ascending = False)
     top_scam_type_list = df_scam_type_interim.iloc[0:10]['scam_type'].values.tolist()
 
@@ -23,6 +31,14 @@ def scam_typology_plot(df):
     df_scam_type['scam_type'] = df_scam_type['scam_type'].str.lower()
     df_scam_type['scam_type'] = df_scam_type['scam_type'].replace('loan scan', 'loan scam')
     df_scam_type['scam_type'] = df_scam_type['scam_type'].str.title()
+    df_scam_type['scam_type'] = df_scam_type['scam_type'].replace({
+        'Bank Phishing Sms Scam': 'Bank Phishing SMS Scam',
+        'Bec Scam': 'BEC Scam',
+        'Cois': 'COIS',
+        'Fgps': 'FGPS',
+        'Gois': 'GOIS',
+        'Osss': 'OSSS',
+        'Non-Bank Phishing Sms Scam': 'Non-Bank Phishing SMS Scam'})
 
     df_scam_type = df_scam_type[df_scam_type["scam_type"].isin(top_scam_type_list)].reset_index()
 
@@ -81,19 +97,12 @@ def scam_typology_plot(df):
     chart = ui.chart({
         'chart': {
             'type': 'spline',
-            'zoomType': 'xy',
+            'zoomType': 'x',
             'backgroundColor': 'rgba(0,0,0,0)',
         },
         
         'title': {
-            'text': 'Scam Typology Trend (Top 10)',
-            'margin': 20,
-            'align': 'left',
-            'style': {
-                'color': '#CED5DF',
-                'fontWeight': 'bold',
-                'fontFamily': 'Michroma'
-            }
+            'text': ''
         },
 
         'credits': {
@@ -165,7 +174,7 @@ def scam_typology_plot(df):
                 'inputStyle': {
                     'color': '#CED5DF'
                 },
-                'selected': 0
+                'selected': 0,
         },
         
         'navigator': {
@@ -202,4 +211,3 @@ def scam_typology_plot(df):
     }, type = 'stockChart', extras = ['stock'])
 
     return chart
-

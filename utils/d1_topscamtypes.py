@@ -11,7 +11,7 @@ def top_scam_types_plot(df):
     df_scam_type.columns = ['num_reports', 'total_amount_scammed']
     df_scam_type = df_scam_type.rename_axis('scam_type').reset_index()
     df_scam_type['scam_type'] = df_scam_type['scam_type'].str.title()
-    df_scam_type = df_scam_type.rename(index = {
+    df_scam_type['scam_type'] = df_scam_type['scam_type'].replace({
         'Bank Phishing Sms Scam': 'Bank Phishing SMS Scam',
         'Bec Scam': 'BEC Scam',
         'Cois': 'COIS',
@@ -26,28 +26,23 @@ def top_scam_types_plot(df):
     df_scam_type['total_amount_scammed'] = df_scam_type['total_amount_scammed'] / 1000000
 
     #   Converting the top 10 scam types to a list 
-    top_scam_type_list = df_scam_type.iloc[0:10]['scam_type'].values.tolist()
-    top_scam_type_num_report = df_scam_type.iloc[0:10]['num_reports'].values.tolist()
-    top_scam_total_amount_scammed_per_type = df_scam_type.iloc[0:10]['total_amount_scammed'].values.tolist()
+    top_scam_type_list = df_scam_type['scam_type'].values.tolist()
+    top_scam_type_num_report = df_scam_type['num_reports'].values.tolist()
+    top_scam_total_amount_scammed_per_type = df_scam_type['total_amount_scammed'].values.tolist()
     for i in range(len(top_scam_total_amount_scammed_per_type)):
-        top_scam_total_amount_scammed_per_type[i] = round(top_scam_total_amount_scammed_per_type[i], 1)
+        top_scam_total_amount_scammed_per_type[i] = round(top_scam_total_amount_scammed_per_type[i], 2)
 
+
+    a = ui.run_javascript('alert("Hello!")')
 
     top_scam_types_plot = ui.chart({
         'chart': {
-            'zoomType': 'xy',
+            'zoomType': 'x',
             'backgroundColor': 'rgba(0,0,0,0)',
         },
         
         'title': {
-            'text': 'Scam Typologies (Top 10)',
-            'margin': 20,
-            'align': 'left',
-            'style': {
-                'color': '#CED5DF',
-                'fontWeight': 'bold',
-                'fontFamily': 'Michroma'
-            }
+            'text': ''
         },
         
         'credits': {
@@ -63,6 +58,22 @@ def top_scam_types_plot(df):
                     'autoRotationLimit': 40, 
                 }
             },
+            'scrollbar': {
+                'enabled': True
+            },
+            'min': 0,
+            'max': 9
+        },
+        
+        'plotOptions': {
+            'series': {
+                'cursor': 'pointer',
+                'point': {
+                    'events': {
+                        'click': a
+                    }
+                }
+            }
         },
         
         'yAxis': [
@@ -105,10 +116,8 @@ def top_scam_types_plot(df):
         
         'legend': {
             'align': 'right',
-            
             'verticalAlign': 'top',
-            
-            'floating': True,
+            'floating': False,
             'itemStyle': {
                 'font': 'Michroma',
                 'color': '#CED5DF'
@@ -134,6 +143,6 @@ def top_scam_types_plot(df):
                 'valueSuffix': ' Million'
             },
         }],
-    })
+    }, extras = ['stock'])
     
     return top_scam_types_plot

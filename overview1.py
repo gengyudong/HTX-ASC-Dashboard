@@ -3,11 +3,18 @@ import pymysql
 import pandas as pd
 from datetime import date, timedelta
 
+from overview2 import d2_content
 from utils.d1_telco import *
 from utils.d1_topscamtypes import *
 from utils.d1_heatmap import *
 from utils.d1_scamtypology import *
-from utils.d1_heatmap import *
+
+#   Initiating Connection with DB
+connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
+cursor = connection.cursor()
+cursor.execute("SELECT UPDATE_TIME FROM information_schema.tables WHERE TABLE_SCHEMA = 'sys' AND TABLE_NAME = 'sys_config'")
+result = cursor.fetchone()
+initial_updated_time = result[0]
 
 @ui.refreshable
 def d1_content():
@@ -16,7 +23,6 @@ def d1_content():
     ui.add_head_html('''            
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
         ''')
 
@@ -67,32 +73,20 @@ def d1_content():
         font-weight: 600;
     ''')
 
+    #   Background
     ui.video('/media/jellyfish-121604.mp4', controls = False, autoplay=True, loop=True).style(bg_video)
         
-    # Initiating Connection with DB
-    # connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
-    # df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
-    
-    
-    connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
-    df = pd.read_sql_query("SELECT * FROM sys.scam_management_system", connection2)
+    #   Initialising connection with db & Fetching data from MySQL database to a Pandas df
+    connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
+    df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
 
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
     with ui.row().style('height: 48vh; width: 100%; flex-wrap: nowrap'):
         
-        #   Box 1: Telco-Line Termination Chart
-        with ui.element('div').style(general_style).style('height: 100%; width: 35%'):
-            telco_df = pd.read_sql_query("""select telco from scam_management_system 
-            join telcos on scam_management_system.telco_report_number = telcos.report_reference """, connection2)
-            
-            telco_plot(telco_df).style('width: 100%; height: 100%')
-            
-    #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
-        
         with ui.column().style('height: 48vh; width: 30%; flex-wrap: nowrap'):
             
-            #   Box 2: ASC Logo
+            #   Box 1: ASC Logo
             with ui.element('div').style('height: 10vh; width: 100%'):
                 with ui.row().classes('items-center justify-center'): 
                     ui.image('https://www.police.gov.sg/-/media/Spf/Archived/2021-10-28/SPF200/Homepage/Large-SPF-Logo.ashx?h=296&w=314&la=en&hash=5D66E7698CEFB5D7B9028D9905C03967').style('width: 5vw')
@@ -100,7 +94,7 @@ def d1_content():
                 
     # -------------------------------------------------------------------------------------------------------------------------------------------------------------#
         
-            #   Box 3: Scam Count Figure
+            #   Box 2: Scam Count Figure
             with ui.element('div').style('height: 38vh; width: 100%').style(scam_count_box_style):
                 
                 ##   Determining figure for Scam Count
@@ -194,21 +188,21 @@ def d1_content():
                                 with ui.row().classes('items-center').style(percentage_style).style('background-color: #3D1915; border-color: #3D1915'):
                                     with ui.element('div').style('margin: auto'):
                                         with ui.row():
-                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.5vw; margin-top: 0.5vh; color: #C14A78; font-weight: 600')
+                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.5vw; margin-top: 0.4vh; color: #C14A78; font-weight: 600')
                                             ui.label(f'{percentage_num}% {word}').style('color: #C14A78; letter-spacing: 0.1vw')
                                     
                             elif arrow == 'arrow_downward':
                                 with ui.row().classes('items-center').style(percentage_style).style('background-color: #117E73; border-color: #117E73'):
                                     with ui.element('div').style('margin: auto'):
                                         with ui.row():
-                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.5vw; margin-top: 0.5vh; color: #28E2CF; font-weight: 600')
+                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.5vw; margin-top: 0.4vh; color: #28E2CF; font-weight: 600')
                                             ui.label(f'{percentage_num}% {word}').style('color: #28E2CF; letter-spacing: 0.1vw')
                             
                             elif arrow == 'remove':
                                 with ui.row().classes('items-center').style(percentage_style).style('background-color: #404F63; border-color: #404F63'):
                                     with ui.element('div').style('margin: auto'):
                                         with ui.row():
-                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.5vw; margin-top: 0.5vh; color: #CED5DF; font-weight: 600')
+                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.2vw; margin-top: 0.4vh; color: #CED5DF; font-weight: 600')
                                             ui.label(f'0% {word}').style('color: #CED5DF; letter-spacing: 0.2vw')
                     
                     with ui.row().style('margin-top: 2vh'):
@@ -225,52 +219,77 @@ def d1_content():
                                 with ui.row().classes('items-center').style(percentage_style).style('background-color: #3D1915; border-color: #3D1915'):
                                     with ui.element('div').style('margin: auto'):
                                         with ui.row():
-                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.5vw; margin-top: 0.5vh; color: #C14A78; font-weight: 600')
+                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.5vw; margin-top: 0.4vh; color: #C14A78; font-weight: 600')
                                             ui.label(f'{percentage_num}% {word}').style('color: #C14A78; letter-spacing: 0.1vw')
                             
                             elif arrow == 'arrow_downward':
                                 with ui.row().classes('items-center').style(percentage_style).style('background-color: #117E73; border-color: #117E73'):
                                     with ui.element('div').style('margin: auto'):
                                         with ui.row():
-                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.5vw; margin-top: 0.5vh; color: #28E2CF; font-weight: 600')
+                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.5vw; margin-top: 0.4vh; color: #28E2CF; font-weight: 600')
                                             ui.label(f'{percentage_num}% {word}').style('color: #28E2CF; letter-spacing: 0.1vw')
                             
                             elif arrow == 'remove':
                                 with ui.row().classes('items-center').style(percentage_style).style('background-color: #404F63; border-color: #404F63'):
                                     with ui.element('div').style('margin: auto'):
                                         with ui.row():
-                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.5vw; margin-top: 0.5vh; color: #CED5DF; font-weight: 600')
+                                            ui.icon(arrow).style('margin-left: 0.4vw; margin-right: -0.2vw; margin-top: 0.4vh; color: #CED5DF; font-weight: 600')
                                             ui.label(f'0% {word}').style('color: #CED5DF; letter-spacing: 0.2vw')
 
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
+        #   Box 3: Top Scam Typologies
         with ui.column().style('height: 48vh; width: 35%'):
-            
-            #   Box 5: Heatmap
-            with ui.element('div').style(general_style).style('height: 100%; width: 100%; overflow: hidden'):
+            with ui.element('div').style('height: 5%; width: 100%'):
+                ui.label('Scam Typologies').style('font-family: Michroma; font-size: 1vw; font-weight: bold; color: #E6EAEF')
+            with ui.element('div').style(general_style).style('height: 90%; width: 100%'):
+                top_scam_types_plot(df).style('width: 100%; height: 100%')
+                
+    #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        #   Box 4: Heatmap
+        with ui.column().style('height: 48vh; width: 35%'):
+            with ui.element('div').style('height: 5%; width: 100%'):
+                ui.label('Divisional Heatmap').style('font-family: Michroma; font-size: 1vw; font-weight: bold; color: #E6EAEF')
+            with ui.element('div').style(general_style).style('height: 90%; width: 100%; overflow: hidden'):
                 heatmap(df).style('height: 100%; width: 150%; margin: auto')
                 
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
     with ui.row().style('height: 46.5vh; width: 100%; flex-wrap: nowrap'):
         
-        #   Box 6: Top Scam Typologies
-        with ui.element('div').style(general_style).style('height: 100%; width: 50%'):
-            top_scam_types_plot(df).style('width: 100%; height: 100%')
+        #   Box 7: Scam Typology Trend
+        with ui.column().style('height: 48vh; width: 65%'):
+            with ui.element('div').style('height: 5%; width: 100%'):
+                ui.label('Scam Typology Trend (Top 10)').style('font-family: Michroma; font-size: 1vw; font-weight: bold; color: #E6EAEF')
+            with ui.element('div').style(general_style).style('height: 90%; width: 100%'):
+                scam_typology_plot(df).style('height: 100%; width: 100%')
     
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
-        
-        #   Box 7: Scam Typology Trend
-        with ui.element('div').style(general_style).style('height: 100%; width: 50%'):
-            scam_typology_plot(df).style('height: 100%; width: 100%')
+            
+        #   Box 3: Telco-Line Termination Chart
+        with ui.column().style('height: 48vh; width: 35%'):
+            with ui.element('div').style('height: 5%; width: 100%'):
+                ui.label('Telco Line Termination').style('font-family: Michroma; font-size: 1vw; font-weight: bold; color: #E6EAEF')
+            with ui.element('div').style(general_style).style('height: 90%; width: 100%'):
+                telco_df = pd.read_sql_query("""select telco from scam_management_system 
+                join telcos on scam_management_system.telco_report_number = telcos.report_reference""", connection)
+                telco_plot(telco_df).style('width: 100%; height: 100%')
 
-
+# @ui.page('/dashboard1')
 d1_content()
 
 #   Updating of UI
-def update():
-    d1_content.refresh()
+def check_db_change():
+    cursor.execute("SELECT UPDATE_TIME FROM information_schema.tables WHERE TABLE_SCHEMA = 'sys' AND TABLE_NAME = 'sys_config'")
+    result = cursor.fetchone()
+    latest_update_time = result[0]
+    global initial_updated_time
+    global df_test
+    if latest_update_time != initial_updated_time:
+        d1_content.refresh()
+        initial_updated_time = latest_update_time
+    
 
-ui.timer(10.0, update)
+ui.timer(10.0, check_db_change)
         
-ui.run(port = 8081)
+ui.run()

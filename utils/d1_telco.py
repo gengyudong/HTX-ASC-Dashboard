@@ -8,23 +8,15 @@ def telco_plot(telco_df):
 
     #   Chart
     chart = ui.chart({
-            'title': {
-                'text': 'Telco Line Termination',
-                'margin': 20,
-                'align': 'left',
-                'style': {
-                    'color': '#CED5DF',
-                    'fontWeight': 'bold',
-                    'fontFamily': 'Michroma'
-                }
-            },
-            
             'chart': {
                 'type': 'bar',
                 'zoomType': 'xy',
                 'backgroundColor': 'rgba(0,0,0,0)',
             },
             
+            'title': {
+                'text': ''
+            },
             'yAxis': {
                 'title': {
                     'text': 'Value',

@@ -3,43 +3,37 @@ import pymysql
 import pandas as pd
 from test2 import *
 
+
+connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
+
+cursor = connection2.cursor()
+cursor.execute("SELECT UPDATE_TIME FROM information_schema.tables WHERE TABLE_SCHEMA = 'sys' AND TABLE_NAME = 'sys_config'")
+result = cursor.fetchone()
+initial_updated_time = result[0]
+
 @ui.refreshable
 def content():
     connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
-
     df_test = pd.read_sql_query("SELECT * FROM sys.sys_config", connection2)
+    chart(df_test)
     
-    chart(df_test).style('height: 80vh; width: 100%')
-
-
 content()
 
+
+
 #   Updating of db
-connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
-df_test = pd.read_sql_query("SELECT * FROM sys.sys_config", connection2)
-initial_df_len = len(df_test.index)
 
-def update():
-    content.refresh()
-
-@ui.refreshable
 def check_db_change():
-    # Initiating Connection with DB
-    # connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
-    # df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
-    df_test = pd.read_sql_query("SELECT * FROM sys.sys_config", connection2)
-    final_df_len = len(df_test.index)
-    print(initial_df_len)
-    print(final_df_len)
+    cursor.execute("SELECT UPDATE_TIME FROM information_schema.tables WHERE TABLE_SCHEMA = 'sys' AND TABLE_NAME = 'sys_config'")
+    result = cursor.fetchone()
+    latest_update_time = result[0]
+    global initial_updated_time
+    global df_test
+    if latest_update_time != initial_updated_time:
+        content.refresh()
+        initial_updated_time = latest_update_time
     
-    if final_df_len != initial_df_len:
-        update()
 
-check_db_change()
-
-def a():
-    check_db_change.refresh()
-
-ui.timer(10.0, a)
-ui.run()
+ui.timer(5.0, check_db_change)
+ui.run(port = 8082)
 
