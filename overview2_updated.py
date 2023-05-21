@@ -1,6 +1,9 @@
 from nicegui import app, ui, Client
 import pymysql
 import pandas as pd
+# import logging 
+
+# logging.basicConfig(filename = 'app.log', level = logging.DEBUG)
 
 from utils.d2_fundrecovery import *
 from utils.d2_recoverytypology import *
@@ -8,10 +11,36 @@ from utils.d2_fundflow import *
 from utils.d2_bankperformance import *
 from utils.d2_recoverytrend import *
 
+from fastapi import HTTPException, Form
+
+
+@app.post("/env")
+async def write_to_file(key: str = Form(...), value: str = Form(...)):
+    try:
+        with open('.env', 'r') as file:
+            lines = file.readlines()
+
+        updated_lines = []
+        for line in lines:
+            if key in line:
+                line = f"{key}={value}\n"
+            updated_lines.append(line)
+
+        with open('.env', 'w') as file:
+            file.writelines(updated_lines)
+
+        return {"message": "Environment variable updated successfully."}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @ui.page('/dashboard2')
 async def d2_content(client: Client):
     
     app.add_static_files('/media', 'media')
+    app.add_static_files('/env', 'env')
     #has 16 px padding around nicegui-content class div 
 
     ui.add_head_html('''
@@ -61,9 +90,6 @@ async def d2_content(client: Client):
     
     connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
     df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
-    
-    # connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
-    # df = pd.read_sql_query("SELECT * FROM sys.scam_management_system", connection2)
 
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
     
@@ -74,13 +100,6 @@ async def d2_content(client: Client):
         division = ui.element('div')
         with division.style(div_general_style).style('height: 100%; width: 30%'):
             recovery_by_typology_plot(df).style('height: 100%')
-            # ui.add_body_html("""
-            # <script>
-            #     document.addEventListener('DOMContentLoaded', function () {
-            #     const chart = Highcharts.chart('"""+str(division.id)+ "', {" + recovery_by_typology_plot(df)+"""
-            #         });
-            #     });
-            # </script>""")
 
         with ui.column().style('width: 40%; height:100%; flex-wrap: nowrap; gap:0rem;').classes('items-center'):
             #   ASC Logo
@@ -112,7 +131,7 @@ async def d2_content(client: Client):
         #   Breakdown of Fund Flow Plot
         with ui.element('div').style(div_general_style).style('width: 30%'):
             ffp = fund_flow_plot(df).style('height: 100%; width: 100%')
-            await client.connected()
+            await client.connected(timeout = 5.0)
             await ui.run_javascript("""
                 const chart = getElement(""" +str(ffp.id)+""").chart;
                 chart.update({
@@ -121,10 +140,13 @@ async def d2_content(client: Client):
                             point: {
                                 events: {
                                     click: function() {
+                                        alert('maybe this would work');
                                         $.ajax({
                                             type: 'POST',
-                                            url: 'writeToFile.php',
-                                            data: { value: this.y },
+                                            url: '/env', // Replace with the correct URL
+                                            data: {
+                                                key: "category",
+                                                value: this.category },
                                             success: function (response) {
                                                 console.log(response);
                                             },
@@ -132,6 +154,7 @@ async def d2_content(client: Client):
                                                 console.log(error);
                                             }
                                         });
+
                                     }
                                 }
                             }
@@ -141,16 +164,14 @@ async def d2_content(client: Client):
             """, respond=False)
     
 
-    print(type(division.id))
-
-
-           
+          
 
 def update():
     d2_content.refresh()
 
 # @ui.page('/writeToFile.php')
 # def linktophp():
+
 
 
 # ui.timer(20.0, update)
