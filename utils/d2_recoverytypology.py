@@ -1,6 +1,7 @@
 import pandas as pd
 from nicegui import ui
 
+
 # def formatter(y):
 #     return str(y/1000000)+'M'
 
@@ -42,7 +43,113 @@ def recovery_by_typology_plot(df):
     scam_list = groupedDf.index.to_list()
     recovery_list = groupedDf.loc[:,'recovery'].to_list()
 
+    # chart_script = """
+    # chart: {
+    #     type: 'bar',
+    #     backgroundColor: 'rgba(0,0,0,0)',
+    # },
 
+    # title: {
+    #     text: 'Recovery by typology',
+    #     margin: 20,
+    #     align: 'left',
+    #     style: {
+    #         color: '#CED5DF',
+    #         fontWeight: 'bold',
+    #         fontFamily: 'Michroma',
+    #     }
+    # },
+
+    # xAxis: {
+    #     type: 'category',
+    #     categories: """+str(scam_list)+""",
+    #     min: 0,
+    #     max: 9,
+    #     tickLength: 0, 
+    #     labels: {
+    #         style: {
+    #             color: '#CED5DF',
+    #         }
+    #     },
+    #     scrollbar: {
+    #         enabled: true,
+    #     }
+    # },
+
+    # yAxis: {
+    #     title: {
+    #         text: 'Amount Recovered',
+    #         style: {
+    #             color: '#CED5DF'
+    #         }
+    #     },
+    #     labels: {
+    #         style: {
+    #             color: '#CED5DF',
+    #         }
+    #     },
+    #     gridLineDashStyle: 'dash',
+    # },
+
+    # plotOptions: {
+    #     bar: {
+    #         dataLabels: {
+    #             enabled: true,
+    #             style: {color: '#CED5DF'},
+    #         },
+    #         borderWidth:0,
+    #     },
+    #     series: {
+    #         cursor: 'pointer',
+    #         allowPointSelect: true,
+    #         point: {
+    #             events: {
+    #                 click: function () {
+    #                     // Send an AJAX request to the server with the point's value
+    #                     $.ajax({
+    #                         type: 'POST',
+    #                         url: 'writeToFile.php',
+    #                         data: { value: this.y },
+    #                         success: function (response) {
+    #                             console.log(response);
+    #                         },
+    #                         error: function (xhr, status, error) {
+    #                             console.log(error);
+    #                         }
+    #                     });
+    #                 }
+    #             }
+    #         }
+    #     }, 
+    # },
+
+    # tooltip:{
+    #     valueDecimals: 2,
+    #     valuePrefix: '$',
+    # },
+
+    # legend: {
+    #     enabled: false
+    # },
+    # credits: {
+    #     enabled: false
+    # },
+
+    # series: [{
+    #     name: 'Recovered',
+    #     data:"""+str(recovery_list)+""",
+    #     dataLabels: {
+    #         enabled: true,
+    #         format: '${point.y:,.2f}',
+    #     }
+    # }],
+    # """
+
+    # # , extras = ['stock']
+
+    # return chart_script
+
+        
     ###     Bar Chart
     chart = ui.chart({
             'chart': {
@@ -128,16 +235,11 @@ def recovery_by_typology_plot(df):
                     }
                     
                     }],
-
-            # 'numberFormatter':round(arguments)  
-            
-            'legend':{
-                'enabled': False
-            },
-
-            'credits': {
-                'enabled': False
-            },
         }, extras = ['stock']) 
 
     return chart
+
+
+# from dotenv import load_dotenv
+# load_dotenv(ui.env file)
+# os.getenv(environmentname)

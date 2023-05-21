@@ -1,7 +1,6 @@
-from nicegui import app, ui
+from nicegui import app, ui, Client
 import pymysql
 import pandas as pd
-import js2py
 
 from utils.d2_fundrecovery import *
 from utils.d2_recoverytypology import *
@@ -9,9 +8,9 @@ from utils.d2_fundflow import *
 from utils.d2_bankperformance import *
 from utils.d2_recoverytrend import *
 
-# @ui.page('/dashboard2')
-@ui.refreshable
-def d2_content():
+@ui.page('/dashboard2')
+async def d2_content(client: Client):
+    
     app.add_static_files('/media', 'media')
     #has 16 px padding around nicegui-content class div 
 
@@ -20,6 +19,7 @@ def d2_content():
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         ''')
 
     bg_video = '''
@@ -66,7 +66,7 @@ def d2_content():
     # df = pd.read_sql_query("SELECT * FROM sys.scam_management_system", connection2)
 
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
-
+    
     with ui.row().style('height: 60vh; width: 100%; flex-wrap: nowrap'):
         
         
@@ -75,8 +75,12 @@ def d2_content():
         with division.style(div_general_style).style('height: 100%; width: 30%'):
             recovery_by_typology_plot(df).style('height: 100%')
             # ui.add_body_html("""
-            # <script>document.addEventListener('DOMContentLoaded', function () {
-            # const chart = Highcharts.chart('"""+str(division.id)+ "', {" + recovery_by_typology_plot(df))
+            # <script>
+            #     document.addEventListener('DOMContentLoaded', function () {
+            #     const chart = Highcharts.chart('"""+str(division.id)+ "', {" + recovery_by_typology_plot(df)+"""
+            #         });
+            #     });
+            # </script>""")
 
         with ui.column().style('width: 40%; height:100%; flex-wrap: nowrap; gap:0rem;').classes('items-center'):
             #   ASC Logo
@@ -108,20 +112,46 @@ def d2_content():
         #   Breakdown of Fund Flow Plot
         with ui.element('div').style(div_general_style).style('width: 30%'):
             ffp = fund_flow_plot(df).style('height: 100%; width: 100%')
-            # .on('click', lambda: ui.notify('Not sure how '))
+            await client.connected()
+            await ui.run_javascript("""
+                const chart = getElement(""" +str(ffp.id)+""").chart;
+                chart.update({
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function() {
+                                        $.ajax({
+                                            type: 'POST',
+                                            url: 'writeToFile.php',
+                                            data: { value: this.y },
+                                            success: function (response) {
+                                                console.log(response);
+                                            },
+                                            error: function (xhr, status, error) {
+                                                console.log(error);
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            """, respond=False)
     
-    # async def handleBarClick():
-    #     await 
 
     print(type(division.id))
 
-    
 
-d2_content()
            
 
 def update():
     d2_content.refresh()
 
+# @ui.page('/writeToFile.php')
+# def linktophp():
+
+
 # ui.timer(20.0, update)
-ui.run()
+ui.run(port = 8082)

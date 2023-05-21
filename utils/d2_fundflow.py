@@ -1,13 +1,13 @@
 from nicegui import ui
 import pandas as pd
-from highcharts_core import highcharts
+from javascript import require
 
 
 async def handleBarClick(event):
     await ui.run_javascript(
         "alert('hello')"
     )
-    print("Maybe this would work")
+    # print("Maybe this would work")
 # def handleBarClick(event):
 #     print("it clicked")
 #     ui.run_javascript('alert("javascript ran")')
@@ -45,15 +45,13 @@ def fund_flow_plot(df):
     #                                     series_type = 'line')
 
 
-
+    alert = require("./click_function.js")
 
     chart = ui.chart({
             'chart': {'type': 'bar',
                       'backgroundColor': 'rgba(0,0,0,0)',
                       },
-            'events':{
-                        'click': 'function(event){console.log("Hola");}'
-                    },
+            
             
             'title': {
                 'text': 'Breakdown of Fund Flow',
@@ -99,9 +97,7 @@ def fund_flow_plot(df):
                 },
                 'borderWidth':0,
                 'dataGrouping': False,
-                # 'events': {
-                #     'click': handleBarClick,
-                # },
+
                     }],
 
             'tooltip':{
@@ -122,12 +118,9 @@ def fund_flow_plot(df):
 
                         }
                     },
+
+                    'allowPointSelect':True,
                     
-                    'point':{
-                    'events':{
-                        'click':"function(){alert('hello');}"
-                    },
-                    },
                 },
             },
 
@@ -138,6 +131,5 @@ def fund_flow_plot(df):
                 'enabled': False,
             },
         }).classes('w-full h-64')
-    print(chart.options)
-    # chart.on_click(on_chart_click)
+   
     return chart
