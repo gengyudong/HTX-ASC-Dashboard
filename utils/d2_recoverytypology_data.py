@@ -6,15 +6,13 @@ def recovery_typology_data(connection):
     #Variables 
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #depends on where .env file is 
     env_path = os.path.join(parent_dir, '.env')
-
     env_vars = dotenv_values(env_path)
-    overseas_local_var = env_vars['OVERSEAS_LOCAL'] #default value 'overseas_local'
-    print('OVERSEAS_LOCAL VALUE:', overseas_local_var)
-    if overseas_local_var != 'overseas_local':
-        overseas_local_var = "'" +overseas_local_var+"'"
+    condition = env_vars['CONDITION'] #default value 'overseas_local'
 
-    query = f"""SELECT latest_balance_seized, amount_scammed, scam_type FROM astro.scam_management_system
-                WHERE overseas_local = {overseas_local_var}""" #improve this to put the ? NEED TO PUT THE '' in .env file for each entry
+    query = "SELECT latest_balance_seized, amount_scammed, scam_type FROM astro.scam_management_system"
+    if condition!= ('None' or 'SCAM_TYPE') :
+        condition_value = env_vars[condition] 
+        query += f" WHERE {condition} = '{condition_value}'"
     
     print("QUERY: " + query)
     df = pd.read_sql_query(query, connection)
