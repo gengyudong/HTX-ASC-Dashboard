@@ -108,9 +108,11 @@ async def d2_content(client: Client):
     
     global connection
     connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
-    # query = f"SELECT * FROM astro.scam_management_system WHERE overseas_local = '{overseas_local}'" #improve this to put the ? 
-    
-    # df = pd.read_sql_query(query, connection)
+   
+    with open('.env', 'w') as f:
+        f.write("""CONDITION='None'
+OVERSEAS_LOCAL='None'
+SCAM_TYPE='None'""")
 
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
     

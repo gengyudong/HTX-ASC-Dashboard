@@ -7,10 +7,11 @@ def recovery_typology_data(connection):
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #depends on where .env file is 
     env_path = os.path.join(parent_dir, '.env')
     env_vars = dotenv_values(env_path)
-    condition = env_vars['CONDITION'] #default value 'overseas_local'
+    condition = env_vars['CONDITION']
+    print("CONDITION", condition)
 
     query = "SELECT latest_balance_seized, amount_scammed, scam_type FROM astro.scam_management_system"
-    if condition!= ('None' or 'SCAM_TYPE') :
+    if condition not in ['None', 'SCAM_TYPE'] :
         condition_value = env_vars[condition] 
         query += f" WHERE {condition} = '{condition_value}'"
     

@@ -12,7 +12,7 @@ def fundflow_data(connection):
     #CREATE QUERY
     query = "SELECT overseas_local, SUM(amount_scammed), SUM(amount_transcated), COUNT(*) FROM astro.scam_management_system"
 
-    if condition!= ('None' or 'OVERSEAS_LOCAL') :
+    if condition not in  ['None', 'OVERSEAS_LOCAL'] :
         condition_value = env_vars[condition] 
         query += f" WHERE {condition} = '{condition_value}'"
 
@@ -21,9 +21,11 @@ def fundflow_data(connection):
     fundFlowDf = pd.read_sql_query(query, connection) #improve this to put the ? prevent SQL injection
 
     ###     Data Processing 
+    fundFlowDf = fundFlowDf.dropna(subset=['overseas_local']).fillna(0)
+    print(fundFlowDf)
     fundFlowDf = fundFlowDf.set_index('overseas_local')
-    fundFlowDf = fundFlowDf.dropna()
     fundFlowSum = fundFlowDf['SUM(amount_scammed)']+fundFlowDf['SUM(amount_transcated)']
+    
     fundFlowCount = fundFlowDf['COUNT(*)']
     
     #   data cleaning 
