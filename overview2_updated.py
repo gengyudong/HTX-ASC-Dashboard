@@ -14,27 +14,14 @@ from utils.d2_fundflow_data import *
 from utils.d2_recoverytypology_data import *
 
 from fastapi import HTTPException, Form
+from dotenv import set_key
 
 
 @app.post("/env")
 async def write_to_file(key: str = Form(...), value: str = Form(...),):
     try:
-        ### WRITE ENV FILE
-        with open('.env', 'r') as file:
-            lines = file.readlines()
-
-        updated_lines = []
-
-        #might change this to a less clunky way using python dotenv 
-        for line in lines:
-            if 'CONDITION' in line:
-                line = f"CONDITION={key}\n"
-            elif key in line:
-                line = f"{key}={value}\n"
-            updated_lines.append(line)
-
-        with open('.env', 'w') as file:
-            file.writelines(updated_lines)
+        set_key('.env', key, value)
+        set_key('.env', 'CONDITION', key)
         
         message = "Environment variable updated successfully. "
 
