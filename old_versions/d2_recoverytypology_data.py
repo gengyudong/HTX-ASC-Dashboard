@@ -1,25 +1,9 @@
 import pandas as pd
-from dotenv import dotenv_values
-import os
 
-def recovery_typology_data(connection):
-    #Variables 
-    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #depends on where .env file is 
-    env_path = os.path.join(parent_dir, '.env')
-    env_vars = dotenv_values(env_path)
-
-    query = f"SELECT latest_balance_seized, amount_scammed, scam_type FROM astro.scam_management_system"
-    query_keyword = 'WHERE'
-    for key in env_vars.keys():
-        if key.startswith("OVERSEASLOCAL_"):
-            oltype = key.split("_")[1].replace(".", " ")
-            if env_vars[key] == '1':
-                query += f" {query_keyword} overseas_local = '{oltype}'"
-                query_keyword = "OR"
-    print("QUERY: " +query)
+def recovery_typology_data(df):
+    #   Retrive data
+    df = df[[ 'latest_balance_seized', 'amount_scammed', 'scam_type']].copy()
     
-    df = pd.read_sql_query(query, connection)
-
     ###   Data Processing
     #   settling typos
     df['scam_type'] = df['scam_type'].str.title()

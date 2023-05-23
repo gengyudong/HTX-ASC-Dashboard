@@ -1,7 +1,30 @@
 from nicegui import ui
-from utils.d2_fundflow_data import * 
+import pandas as pd
+   
+def fundflow_data(df):
+     ###     Data Processing 
+    fundFlowDf = df[['overseas_local', 'amount_scammed', 'amount_transcated']].copy()
+    fundFlowSum = fundFlowDf.groupby('overseas_local').sum().round(2)
+    fundFlowCount = fundFlowDf.groupby('overseas_local').size()
+    fundFlowSum = fundFlowSum['amount_scammed']+fundFlowSum['amount_transcated']
 
-def fund_flow_plot(connection):
+    #   data cleaning
+    if 'L-l' in fundFlowSum.index:
+        fundFlowSum['L-L']+=fundFlowSum['L-l']
+        fundFlowSum = fundFlowSum.drop('L-l')
+
+        fundFlowCount['L-L']+=fundFlowCount['L-l']
+        fundFlowCount = fundFlowCount.drop('L-l')
+    
+    #   convert to list and add fullName 
+    fullName = pd.Series({'L-L':'Local-Local', 'L-O':'Local-Overseas', 'O-L':'Overseas-Local', 'O-O':'Overseas-Overseas'})
+    to_display_df = pd.concat([fullName, fundFlowSum, fundFlowCount], axis = 1)
+    to_display_df.columns = ['name','y', 'count']
+    results = to_display_df.to_dict(orient="records")
+
+    return results
+
+def fund_flow_plot(df):
     chart = ui.chart({
             'chart': {'type': 'bar',
                       'backgroundColor': 'rgba(0,0,0,0)',
@@ -44,7 +67,7 @@ def fund_flow_plot(connection):
 
             'series': [{
                 'name': 'Funds',
-                'data': fundflow_data(connection),
+                'data': fundflow_data(df),
                 'dataLabels':{
                     'enabled': True,
                     'style': {'color': '#CED5DF'},

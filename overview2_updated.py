@@ -10,8 +10,7 @@ from utils.d2_recoverytypology import *
 from utils.d2_fundflow import *
 from utils.d2_bankperformance import *
 from utils.d2_recoverytrend import *
-from utils.d2_fundflow_data import *
-from utils.d2_recoverytypology_data import *
+from utils.filter_data import *
 
 from fastapi import HTTPException, Form
 from dotenv import set_key, dotenv_values
@@ -36,12 +35,14 @@ OVERSEASLOCAL_O-O=0""")
 @app.post("/env")
 async def write_to_file(condition: str = Form(...), value: str = Form(...),):
     try:
+        #might add a CONDITION= condition, with a whole dictionary to transform SCAMTYPE to scam_type to pass in the condition
+        
         print(condition, value)
         env_vars = dotenv_values('.env') 
         condition_value = condition+"_"+value.replace(" ", ".")
         print("KEY_VALUE", {condition_value})
 
-        # Toggle 1 or 0 for that key
+         # Toggle 1 or 0 for that key
         if env_vars[condition_value] == '1':
             set_key('.env', condition_value, '0')
         elif env_vars[condition_value] == '0':
@@ -54,26 +55,40 @@ async def write_to_file(condition: str = Form(...), value: str = Form(...),):
         
         message = "Environment variable updated successfully. "
 
-        await update_charts()
+        filtered_df = filter_data(df)
+        await update_charts(filtered_df, condition)
             
         return {"message": message}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def update_charts():
-    category_list, data_list = recovery_typology_data(connection)
+async def update_charts(filtereddf, condition):
+    print("UPDATE CHART START")
+    #Recovery Typology Chart
+    category_list, data_list = recovery_typology_data(filtereddf)
     rt.options['series'][0]['data'] = data_list
     rt.options['xAxis']['categories'] = category_list
-    rt.update()
-    ffp.options['series'][0]['data'] = fundflow_data(connection)
-    ffp.update()
-    print("UPDATE CHARTS")
+    print("RT CHART DATA DONE")
 
+    #FundFlow Chart
+    ffp.options['series'][0]['data'] = fundflow_data(filtereddf)
+    print("FFP CHART DATA DONE")
 
-# async def update():
-#     grid.options['rowData'][0]['age'] += 1
-#     grid.update()
+    #FundRecovery Chart
+    amount_scammed, amount_recover, amount_recover_percentage, amount_scammed_percentage = fund_recovery_data(filtereddf)
+    fr.options['title']['text'] = f'Scam Amount <br> ${amount_scammed:,} <br><br><b>Fund Recovery</b><br><br> Recovered Amount <br> ${amount_recover:,}'
+    fr.options['series'][0]['data'][0]['y'] = amount_recover_percentage
+    fr.options['series'][0]['data'][1]['y'] = amount_scammed_percentage
+    print("FR CHART DATA DONE")
+    
+    if condition == "OVERSEASLOCAL":
+        rt.update()
+    elif condition=="SCAMTYPE": 
+        ffp.update()
+    fr.update()
+    print("UPDATE CHART END")
+
 
 @ui.refreshable
 @ui.page('/')
@@ -130,7 +145,9 @@ async def d2_content(client: Client):
     
     global connection
     connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
-    
+    global df
+    df= pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
+    filtered_df = filter_data(df)
 
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
     
@@ -141,10 +158,10 @@ async def d2_content(client: Client):
         division = ui.element('div')
         with division.style(div_general_style).style('height: 100%; width: 30%'):
             global rt 
-            rt = recovery_by_typology_plot(connection).style('height: 100%')
+            rt = recovery_by_typology_plot(filtered_df).style('height: 100%')
             
 
-        """ with ui.column().style('width: 40%; height:100%; flex-wrap: nowrap; gap:0rem;').classes('items-center'):
+        with ui.column().style('width: 40%; height:100%; flex-wrap: nowrap; gap:0rem;').classes('items-center'):
             #   ASC Logo
             with ui.element('div').style('height: 10vh; width: 100%'):
                 with ui.row().classes('items-center justify-center'): 
@@ -153,14 +170,15 @@ async def d2_content(client: Client):
 
             #   Fund Recovery Progress
             with ui.element('div').classes('items-center').style('align: center; height: 50vh; width: 100%'):
-                fund_recovery_plot().style('position:relative; width: 100%; height: 100%')
+                global fr
+                fr = fund_recovery_plot(filtered_df).style('position:relative; width: 100%; height: 100%')
 
         #   Bank's Performance
-        with ui.element('div').style(div_general_style).style('width: 30%'):
+        """with ui.element('div').style(div_general_style).style('width: 30%'):
             with ui.row().classes('justify-between items-center').style('flex-wrap: nowrap;'):
                 ui.label("Bank's Performance").style(label_style)
                 ui.select(['min', 'max', 'sum', 'mean'], value='mean', on_change = lambda x:change_stats(x.value, grid)).style('background-color: #87c6e6 !important; border-radius:5px;').classes('px-3 w-28')
-            grid = bank_performance_table_dropdown(connection).style('height:85%;')"""
+            grid = bank_performance_table_dropdown(df).style('height:85%;')"""
                 # .style('height: 50vh;') #Cant get the height correct on differnet size screens  
             
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -174,7 +192,7 @@ async def d2_content(client: Client):
         #   Breakdown of Fund Flow Plot
         with ui.element('div').style(div_general_style).style('width: 30%'):
             global ffp
-            ffp = fund_flow_plot(connection).style('height: 100%; width: 100%')
+            ffp = fund_flow_plot(filtered_df).style('height: 100%; width: 100%')
             
     ### Put Click event in all charts
     await client.connected(timeout = 15.0)

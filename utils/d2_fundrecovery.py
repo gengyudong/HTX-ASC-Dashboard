@@ -1,21 +1,20 @@
 from nicegui import ui
+import pandas as pd
 
-
-def fund_recovery_plot(df):
+def fund_recovery_data(df):
     df_amount_recovery = df[['amount_scammed', 'latest_balance_seized']].copy()
     df_amount_recovery = df_amount_recovery.fillna(0)
+            
+    amount_scammed = df_amount_recovery['amount_scammed'].sum()
+    print("calculated amount scammed")
 
-    amount_scammed = 0
-    for i in range(len(df_amount_recovery.index)):
-        amount_scammed += df_amount_recovery['amount_scammed'][i]
-        
     amount_recover= 0
-    for i in range(len(df_amount_recovery.index)):
-        if df_amount_recovery['latest_balance_seized'][i] >= df_amount_recovery['amount_scammed'][i]:
-            amount_recover += df_amount_recovery['amount_scammed'][i]
-        
+    for i in df_amount_recovery.index:
+        if df_amount_recovery.at[i, 'latest_balance_seized'] >= df_amount_recovery.at[i, 'amount_scammed']:
+            amount_recover += df_amount_recovery.at[i,'amount_scammed']
         else:
-            amount_recover += df_amount_recovery['latest_balance_seized'][i]
+            amount_recover += df_amount_recovery.at[i,'latest_balance_seized']
+
 
     amount_recover = round(amount_recover, 2)
     amount_scammed = round(amount_scammed, 2)
@@ -23,6 +22,12 @@ def fund_recovery_plot(df):
     amount_recover_percentage = amount_recover / amount_scammed * 100
     amount_recover_percentage = round(amount_recover_percentage, 1)
     amount_scammed_percentage = 100.0 - amount_recover_percentage
+    
+    return amount_scammed, amount_recover, amount_recover_percentage, amount_scammed_percentage
+
+def fund_recovery_plot(df):
+
+    amount_scammed, amount_recover, amount_recover_percentage, amount_scammed_percentage = fund_recovery_data(df)
 
     chart = ui.chart({
                 'chart': {
