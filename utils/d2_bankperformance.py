@@ -5,9 +5,7 @@ from nicegui import ui
 
 
 ### Data Processing 
-def bank_performance_table_dropdown(connection):
-    query = "SELECT 'account_bank', 'datetime_production_order_served', 'datetime_bank_account_frozen', 'amount_scammed' FROM astro.scam_management_system"
-
+def bank_performance_data(df): 
     df = df[[ 'account_bank', 'datetime_production_order_served', 
              'datetime_bank_account_frozen', 'amount_scammed']].copy()
     #   Data cleaning 
@@ -30,7 +28,10 @@ def bank_performance_table_dropdown(connection):
                                     'datetime_production_order_served-count': 'Production Orders Sent',
                                     'amount_scammed-mean':'Amount Scammed',
                                     })
+    
+    return to_display_df
 
+def bank_performance_table(df):
     ###     Grid
     grid_style = '''
         --ag-header-background-color:  #03002e;
@@ -42,6 +43,7 @@ def bank_performance_table_dropdown(connection):
         --ag-row-hover-color:rgb(192, 229, 249, 0.2);
     '''
 
+    to_display_df = bank_performance_data(df)
 
     grid = ui.aggrid.from_pandas(to_display_df).style(grid_style)
     grid.options['columnDefs'][0].update({'filter':'agTextColumnFilter'})
@@ -72,15 +74,14 @@ def bank_performance_table_dropdown(connection):
             'floatingFilter': True,
             'suppressMenu' : True,
             },
-            },)
-    
+        })
+    grid.options.update({'rowSelection':'multiple'})
+    grid.options.update({'rowMultiSelectWithClick':True})
 
-    ######################
     return grid
 
 def change_stats(x, grid):
-
     for i in range(len(stats.index)):
-        grid.options['rowData'][i]['Amount Scammed'] = stats['amount_scammed-'+x][i]
+        grid.options['rowData'][i]['Amount Scammed'] = stats['amount_scammed-'+x].iat[i]
     grid.update()
 

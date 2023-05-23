@@ -10,12 +10,14 @@ def filter_data(df):
     conditionexists = False
     for key in env_vars.keys():
         if env_vars[key] == '1':
-            value = key.split("_")[1].replace(".", " ")
+            value = key.split("_")[1].replace(",", " ")
             options.append(value)
             if key.startswith("OVERSEASLOCAL_"):
                 condition = "overseas_local"
             elif key.startswith("SCAMTYPE_"):
                 condition = "scam_type"
+            elif key.startswith("BANK_"):
+                condition = 'account_bank'
             conditionexists = True
     
     if conditionexists:
