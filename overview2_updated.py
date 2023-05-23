@@ -14,44 +14,66 @@ from utils.d2_fundflow_data import *
 from utils.d2_recoverytypology_data import *
 
 from fastapi import HTTPException, Form
-from dotenv import set_key
+from dotenv import set_key, dotenv_values
+
+with open('.env', 'w') as f:
+    f.write("""SCAMTYPE_BEC.Scam=0
+SCAMTYPE_Job.Scam=0
+SCAMTYPE_Investment.Scam=0
+SCAMTYPE_Non.Scam=0
+SCAMTYPE_Other.Scam=0
+SCAMTYPE_GOIS=0
+SCAMTYPE_E-Commerce.Scam=0
+SCAMTYPE_Tech.Support.Scam=0
+SCAMTYPE_Love/Parcel.Scam=0
+SCAMTYPE_Friend.Impersonation.Scam=0
+OVERSEASLOCAL_L-L=0
+OVERSEASLOCAL_L-O=0
+OVERSEASLOCAL_O-L=0
+OVERSEASLOCAL_O-O=0""")
 
 
 @app.post("/env")
-async def write_to_file(key: str = Form(...), value: str = Form(...),):
+async def write_to_file(condition: str = Form(...), value: str = Form(...),):
     try:
-        set_key('.env', key, value)
-        set_key('.env', 'CONDITION', key)
+        print(condition, value)
+        env_vars = dotenv_values('.env') 
+        condition_value = condition+"_"+value.replace(" ", ".")
+        print("KEY_VALUE", {condition_value})
+
+        # Toggle 1 or 0 for that key
+        if env_vars[condition_value] == '1':
+            set_key('.env', condition_value, '0')
+        elif env_vars[condition_value] == '0':
+            set_key('.env', condition_value, '1')
+
+        #Set other fields as 0
+        for key in env_vars.keys():
+            if key.startswith(condition+"_") == False:
+                set_key('.env', key, '0')
         
         message = "Environment variable updated successfully. "
 
-        if key =='OVERSEAS_LOCAL':
-            await update_RT()
-            message+= "Recovery typology chart updated"
-            # add on other charts update functions
-
-        elif key == 'SCAM_TYPE':
-            await update_FFP()
-            message+= "Fund Flow chart updated"
-            # add on other charts update functions
-
+        await update_charts()
+            
         return {"message": message}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def update_RT():
+async def update_charts():
     category_list, data_list = recovery_typology_data(connection)
     rt.options['series'][0]['data'] = data_list
     rt.options['xAxis']['categories'] = category_list
     rt.update()
-    print("UPDATE_RT")
-
-async def update_FFP():
     ffp.options['series'][0]['data'] = fundflow_data(connection)
     ffp.update()
-    print(ffp.options)
-    print("UPDATE_FFP")
+    print("UPDATE CHARTS")
+
+
+# async def update():
+#     grid.options['rowData'][0]['age'] += 1
+#     grid.update()
 
 @ui.refreshable
 @ui.page('/')
@@ -108,11 +130,7 @@ async def d2_content(client: Client):
     
     global connection
     connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
-   
-    with open('.env', 'w') as f:
-        f.write("""CONDITION='None'
-OVERSEAS_LOCAL='None'
-SCAM_TYPE='None'""")
+    
 
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
     
@@ -124,7 +142,6 @@ SCAM_TYPE='None'""")
         with division.style(div_general_style).style('height: 100%; width: 30%'):
             global rt 
             rt = recovery_by_typology_plot(connection).style('height: 100%')
-            await client.connected()
             
 
         """ with ui.column().style('width: 40%; height:100%; flex-wrap: nowrap; gap:0rem;').classes('items-center'):
@@ -143,8 +160,8 @@ SCAM_TYPE='None'""")
             with ui.row().classes('justify-between items-center').style('flex-wrap: nowrap;'):
                 ui.label("Bank's Performance").style(label_style)
                 ui.select(['min', 'max', 'sum', 'mean'], value='mean', on_change = lambda x:change_stats(x.value, grid)).style('background-color: #87c6e6 !important; border-radius:5px;').classes('px-3 w-28')
-            grid = bank_performance_table_dropdown(df).style('height:85%;')
-                # .style('height: 50vh;') #Cant get the height correct on differnet size screens   """
+            grid = bank_performance_table_dropdown(connection).style('height:85%;')"""
+                # .style('height: 50vh;') #Cant get the height correct on differnet size screens  
             
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
@@ -162,35 +179,6 @@ SCAM_TYPE='None'""")
     ### Put Click event in all charts
     await client.connected(timeout = 15.0)
     await ui.run_javascript("""
-        const FFP_chart = getElement(""" +str(ffp.id)+""").chart;
-        FFP_chart.update({
-            plotOptions: {
-                series: {
-                    point: {
-                        events: {
-                            click: function() {
-                                alert('Clicked: '+ this.category);
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '/env', // Replace with the correct URL
-                                    data: {
-                                        key: "OVERSEAS_LOCAL",
-                                        value: this.category,
-                                    },
-                                    success: function (response) {
-                                        console.log(response);
-                                    },
-                                    error: function (xhr, status, error) {
-                                        console.log(error);
-                                    }
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    
         const RT_chart = getElement(""" +str(rt.id)+""").chart;
         RT_chart.update({
             plotOptions: {
@@ -198,12 +186,17 @@ SCAM_TYPE='None'""")
                     point: {
                         events: {
                             click: function() {
-                                alert('Clicked: '+ this.category);
+                                this.select(null, true);
+                                Highcharts.each(Highcharts.charts, function(chart) {
+                                    if (chart !== RT_chart && chart.getSelectedPoints().length > 0) {
+                                        chart.getSelectedPoints()[0].select(false);
+                                    }
+                                }, this);
                                 $.ajax({
                                     type: 'POST',
-                                    url: '/env', // Replace with the correct URL
+                                    url: '/env', 
                                     data: {
-                                        key: "SCAM_TYPE",
+                                        condition: "SCAMTYPE",
                                         value: this.category,
                                     },
                                     success: function (response) {
@@ -213,12 +206,49 @@ SCAM_TYPE='None'""")
                                         console.log(error);
                                     }
                                 });
+                                
                             }
                         }
                     }
                 }
             }
         });
+        const FFP_chart = getElement(""" +str(ffp.id)+""").chart;
+        FFP_chart.update({
+            plotOptions: {
+                series: {
+                    point: {
+                        events: {
+                            click: function() {
+                                Highcharts.each(Highcharts.charts, function(chart) {
+                                    if (chart !== FFP_chart && chart.getSelectedPoints().length > 0) {
+                                        chart.getSelectedPoints()[0].select(false);
+                                    }
+                                }, this);
+                                this.select(null, true);
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '/env', 
+                                    data: {
+                                        condition: "OVERSEASLOCAL",
+                                        value: this.category,
+                                    },
+                                    success: function (response) {
+                                        console.log(response);
+                                    },
+                                    error: function (xhr, status, error) {
+                                        console.log(error);
+                                    }
+                                });
+                                
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    
+        
     """, respond=False)
    
 

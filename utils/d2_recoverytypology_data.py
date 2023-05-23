@@ -7,15 +7,17 @@ def recovery_typology_data(connection):
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #depends on where .env file is 
     env_path = os.path.join(parent_dir, '.env')
     env_vars = dotenv_values(env_path)
-    condition = env_vars['CONDITION']
-    print("CONDITION", condition)
 
-    query = "SELECT latest_balance_seized, amount_scammed, scam_type FROM astro.scam_management_system"
-    if condition not in ['None', 'SCAM_TYPE'] :
-        condition_value = env_vars[condition] 
-        query += f" WHERE {condition} = '{condition_value}'"
+    query = f"SELECT latest_balance_seized, amount_scammed, scam_type FROM astro.scam_management_system"
+    query_keyword = 'WHERE'
+    for key in env_vars.keys():
+        if key.startswith("OVERSEASLOCAL_"):
+            oltype = key.split("_")[1].replace(".", " ")
+            if env_vars[key] == '1':
+                query += f" {query_keyword} overseas_local = '{oltype}'"
+                query_keyword = "OR"
+    print("QUERY: " +query)
     
-    print("QUERY: " + query)
     df = pd.read_sql_query(query, connection)
 
     ###   Data Processing

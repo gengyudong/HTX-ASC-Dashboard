@@ -66,12 +66,10 @@ def fund_flow_plot(connection):
             },
 
             'plotOptions':{
-                'series':{
-                    'bar': {
-                        'color': '#db3eb1',
-                    },
-                    'allowPointSelect':True,   
-                },
+                'bar': {
+                    'color': '#db3eb1',
+                }, 
+
             },
 
             'legend':{

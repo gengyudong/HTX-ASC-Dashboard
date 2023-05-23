@@ -32,8 +32,8 @@ def recovery_by_typology_plot(connection):
                               }
                 },
                 'scrollbar':{
-                'enabled':True,
-            },
+                    'enabled':True,
+                },
             },
             'yAxis':{
                 'title': {
@@ -58,9 +58,6 @@ def recovery_by_typology_plot(connection):
                         'style': {'color': '#CED5DF'},
                     },
                     'borderWidth':0,
-                },
-                'series':{
-                    'allowPointSelect':True,
                 },
             },
 

@@ -7,25 +7,27 @@ def fundflow_data(connection):
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #depends on where .env file is 
     env_path = os.path.join(parent_dir, '.env')
     env_vars = dotenv_values(env_path)
-    condition = env_vars['CONDITION']
     
     #CREATE QUERY
     query = "SELECT overseas_local, SUM(amount_scammed), SUM(amount_transcated), COUNT(*) FROM astro.scam_management_system"
-
-    if condition not in  ['None', 'OVERSEAS_LOCAL'] :
-        condition_value = env_vars[condition] 
-        query += f" WHERE {condition} = '{condition_value}'"
+    query_keyword = 'WHERE'
+    for key in env_vars.keys():
+        if key.startswith("SCAMTYPE_"):
+            scamtype = key.split("_")[1].replace(".", " ")
+            if env_vars[key] == '1':
+                query += f" {query_keyword} scam_type = '{scamtype}'"
+                query_keyword = "OR"
 
     query += " group by overseas_local" 
+
+    print(query)
 
     fundFlowDf = pd.read_sql_query(query, connection) #improve this to put the ? prevent SQL injection
 
     ###     Data Processing 
     fundFlowDf = fundFlowDf.dropna(subset=['overseas_local']).fillna(0)
-    print(fundFlowDf)
     fundFlowDf = fundFlowDf.set_index('overseas_local')
     fundFlowSum = fundFlowDf['SUM(amount_scammed)']+fundFlowDf['SUM(amount_transcated)']
-    
     fundFlowCount = fundFlowDf['COUNT(*)']
     
     #   data cleaning 
@@ -40,5 +42,7 @@ def fundflow_data(connection):
     to_display_df = pd.concat([fullName, fundFlowSum, fundFlowCount], axis = 1)
     to_display_df.columns = ['name','y', 'count']
     results = to_display_df.to_dict(orient="records")
+
+    print(results)
 
     return results

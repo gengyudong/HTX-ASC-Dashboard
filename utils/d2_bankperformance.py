@@ -5,7 +5,8 @@ from nicegui import ui
 
 
 ### Data Processing 
-def bank_performance_table_dropdown(df):
+def bank_performance_table_dropdown(connection):
+    query = "SELECT 'account_bank', 'datetime_production_order_served', 'datetime_bank_account_frozen', 'amount_scammed' FROM astro.scam_management_system"
 
     df = df[[ 'account_bank', 'datetime_production_order_served', 
              'datetime_bank_account_frozen', 'amount_scammed']].copy()
