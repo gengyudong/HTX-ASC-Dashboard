@@ -62,27 +62,6 @@ def top_scam_types_plot(df):
         'credits': {
             'enabled': False
         },
-        'plotOptions': json.loads({
-            'series': {
-                'cursor': 'pointer',
-                'point': {
-                    'events': {
-                        'click': "console.alert () {alert('Category: ' + this.category + ', value: ' + this.y);"
-                        }
-                    }
-                }
-            }),
-        # 'plotOptions': {
-        #     'series': {
-        #         'cursor': 'pointer',
-        #         'point': {
-        #             'events': {
-        #                 'click': "console.alert () {alert('Category: ' + this.category + ', value: ' + this.y);"
-        #                 }
-        #             }
-        #         }
-        #     }
-        # },
         
         'xAxis': {
             'categories': top_scam_type_list,
