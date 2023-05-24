@@ -1,22 +1,22 @@
 from nicegui import ui
 from datetime import timedelta, datetime, timezone, date
 
-def recovery_trend_plot(df):
+def recovery_trend_data(df):
     df_recovery_trend = df[['date_assigned', 'amount_scammed', 'latest_balance_seized']].copy()
     df_recovery_trend = df_recovery_trend.fillna(0)
-
+    
     iteration_count = len(df_recovery_trend.index)
     dates = []
     amount_recovered_list = []
     amount_recovered_interim = 0
 
-    start_date = df_recovery_trend['date_assigned'][0]
+    start_date = df_recovery_trend['date_assigned'].iat[0]
     time = datetime.min.time()
     start_datetime = datetime.combine(start_date, time)
     start_datetime = round(start_datetime.replace(tzinfo=timezone.utc).timestamp()) * 1000
     current_date = start_date
-    end_date = df_recovery_trend['date_assigned'][iteration_count-1]
-
+    end_date = df_recovery_trend['date_assigned'].iat[-1]
+    
     max_date = date.today()
     time = datetime.min.time()
     default_max_datetime = datetime.combine(max_date, time)
@@ -35,30 +35,24 @@ def recovery_trend_plot(df):
         x = x.strftime('%Y-%m-%d')
 
     current_date = start_date
-
+    
     for i in range(iteration_count):
-        if df_recovery_trend['date_assigned'][i] == current_date:
-            if df_recovery_trend['latest_balance_seized'][i] >= df_recovery_trend['amount_scammed'][i]:
-                amount_recovered_interim += df_recovery_trend['amount_scammed'][i]
-            else:
-                amount_recovered_interim += df_recovery_trend['latest_balance_seized'][i]
-
-        else:
+        if df_recovery_trend['date_assigned'].iat[i] != current_date:
             amount_recovered_interim /= 1000000
             amount_recovered_interim = round(amount_recovered_interim, 2)
             amount_recovered_list.append(amount_recovered_interim)
             amount_recovered_interim = 0
             current_date += timedelta(days = 1)
             
-            while df_recovery_trend['date_assigned'][i] != current_date:
+            while df_recovery_trend['date_assigned'].iat[i] != current_date:
                 amount_recovered_list.append(0)   
                 current_date += timedelta(days = 1)
-                
-            if df_recovery_trend['latest_balance_seized'][i] >= df_recovery_trend['amount_scammed'][i]:
-                amount_recovered_interim += df_recovery_trend['amount_scammed'][i]
-            else:
-                amount_recovered_interim += df_recovery_trend['latest_balance_seized'][i]
-                
+
+        if df_recovery_trend['latest_balance_seized'].iat[i] >= df_recovery_trend['amount_scammed'].iat[i]:
+            amount_recovered_interim += df_recovery_trend['amount_scammed'].iat[i]
+        else:
+            amount_recovered_interim += df_recovery_trend['latest_balance_seized'].iat[i]
+ 
     amount_recovered_interim /= 1000000
     amount_recovered_interim = round(amount_recovered_interim, 2)
     amount_recovered_list.append(amount_recovered_interim)
@@ -68,11 +62,16 @@ def recovery_trend_plot(df):
         current_date += timedelta(days = 1)
         
     amount_recovered_list.append(0)
+    return default_min_xview, default_max_xview, start_datetime, amount_recovered_list
 
+
+def recovery_trend_plot(df):
+    default_min_xview, default_max_xview, start_datetime, amount_recovered_list = recovery_trend_data(df)
     chart = ui.chart({
         'chart': {
             'type': 'column',
             'backgroundColor': 'rgba(0,0,0,0)',
+            'animation': False,
         },
         
         'title': {

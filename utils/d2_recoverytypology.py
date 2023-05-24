@@ -1,16 +1,9 @@
-import pandas as pd
 from nicegui import ui
-
-# def formatter(y):
-#     return str(y/1000000)+'M'
-
-def recovery_by_typology_plot(df):
-    
+def recovery_typology_data(df):
     #   Retrive data
     df = df[[ 'latest_balance_seized', 'amount_scammed', 'scam_type']].copy()
-
+    
     ###   Data Processing
-
     #   settling typos
     df['scam_type'] = df['scam_type'].str.title()
 
@@ -18,8 +11,10 @@ def recovery_by_typology_plot(df):
     groupedDf = df.groupby('scam_type').sum()
 
     #   settling typos
-    groupedDf.loc['Loan Scam']+=groupedDf.loc['Loan Scan']
-    groupedDf = groupedDf.drop(index = 'Loan Scan')
+    if 'Loan Scan' in df['scam_type']:
+        groupedDf.loc['Loan Scam']+=groupedDf.loc['Loan Scan']
+        groupedDf = groupedDf.drop(index = 'Loan Scan')
+
     groupedDf = groupedDf.rename(index={
         'Bank Phishing Sms Scam': 'Bank Phishing SMS Scam',
         'Bec Scam': 'BEC Scam',
@@ -42,8 +37,12 @@ def recovery_by_typology_plot(df):
     scam_list = groupedDf.index.to_list()
     recovery_list = groupedDf.loc[:,'recovery'].to_list()
 
+    print('RECOVERY TYPOLOGY DATA OBTAINED')
+    return scam_list, recovery_list
 
+def recovery_by_typology_plot(df):
     ###     Bar Chart
+    scam_list, recovery_list = recovery_typology_data(df)
     chart = ui.chart({
             'chart': {
                 'type': 'bar',
@@ -72,8 +71,8 @@ def recovery_by_typology_plot(df):
                               }
                 },
                 'scrollbar':{
-                'enabled':True,
-            },
+                    'enabled':True,
+                },
             },
             'yAxis':{
                 'title': {
@@ -98,7 +97,7 @@ def recovery_by_typology_plot(df):
                         'style': {'color': '#CED5DF'},
                     },
                     'borderWidth':0,
-                }
+                },
             },
 
             'tooltip':{
@@ -128,16 +127,12 @@ def recovery_by_typology_plot(df):
                     }
                     
                     }],
-
-            # 'numberFormatter':round(arguments)  
-            
-            'legend':{
-                'enabled': False
-            },
-
-            'credits': {
-                'enabled': False
-            },
         }, extras = ['stock']) 
+    print(chart.options['series'])
 
     return chart
+
+
+# from dotenv import load_dotenv
+# load_dotenv(ui.env file)
+# os.getenv(environmentname)
