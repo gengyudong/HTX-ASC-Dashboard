@@ -3,7 +3,7 @@ import os
 from dotenv import dotenv_values
 def filter_data(df):
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #depends on where .env file is 
-    env_path = os.path.join(parent_dir, '.env')
+    env_path = os.path.join(parent_dir, 'd2.env')
     env_vars = dotenv_values(env_path)
 
     options = []

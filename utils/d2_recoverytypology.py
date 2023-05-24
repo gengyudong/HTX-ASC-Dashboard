@@ -131,8 +131,3 @@ def recovery_by_typology_plot(df):
     print(chart.options['series'])
 
     return chart
-
-
-# from dotenv import load_dotenv
-# load_dotenv(ui.env file)
-# os.getenv(environmentname)

@@ -14,7 +14,7 @@ from dotenv import set_key, dotenv_values
 
 with open('initialise_env.txt', 'r') as initialise_f:
     original_env = initialise_f.read()
-    with open('.env', 'w') as env_f:
+    with open('d2.env', 'w') as env_f:
         env_f.write(original_env)
 
 connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
@@ -28,18 +28,18 @@ async def write_to_file(condition: str = Form(...), value: str = Form(...),):
     try:
         #might add a CONDITION= condition, with a whole dictionary to transform SCAMTYPE to scam_type to pass in the condition
         print(condition, value)
-        env_vars = dotenv_values('.env') 
+        env_vars = dotenv_values('d2.env') 
         if condition == "BANK":
             #reset everything to 0
             for key in env_vars.keys():
-                set_key('.env', key, '0')
+                set_key('d2.env', key, '0')
             
             if value != 'None Selected':
                 #set selected rows to 1
                 values = value.split(',')
                 for i in values:
                     i = i.replace(" ", ",")
-                    set_key('.env', 'BANK_'+i, '1')
+                    set_key('d2.env', 'BANK_'+i, '1')
             message = "Bank Environment variable updated successfully. "
 
         else:   
@@ -48,14 +48,14 @@ async def write_to_file(condition: str = Form(...), value: str = Form(...),):
 
             # Toggle 1 or 0 for that key
             if env_vars[condition_value] == '1':
-                set_key('.env', condition_value, '0')
+                set_key('d2.env', condition_value, '0')
             elif env_vars[condition_value] == '0':
-                set_key('.env', condition_value, '1')
+                set_key('d2.env', condition_value, '1')
 
             #Set other fields as 0
             for key in env_vars.keys():
                 if key.startswith(condition+"_") == False:
-                    set_key('.env', key, '0')
+                    set_key('d2.env', key, '0')
             message = "Environment variable updated successfully. "
         
         
