@@ -1,6 +1,6 @@
 from nicegui import ui
 import pandas as pd
-from datetime import timedelta, timezone, date, datetime
+from datetime import timedelta, timezone, date
 
 def scam_typology_plot(df):
     #   Getting data for top 10 scam types (Same code as d1_topscamtypes.py)
@@ -97,7 +97,7 @@ def scam_typology_plot(df):
     chart = ui.chart({
         'chart': {
             'type': 'spline',
-            'zoomType': 'x',
+            'zoomType': 'xy',
             'backgroundColor': 'rgba(0,0,0,0)',
         },
         

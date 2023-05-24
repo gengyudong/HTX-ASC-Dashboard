@@ -32,9 +32,6 @@ def top_scam_types_plot(df):
     for i in range(len(top_scam_total_amount_scammed_per_type)):
         top_scam_total_amount_scammed_per_type[i] = round(top_scam_total_amount_scammed_per_type[i], 2)
 
-
-    a = ui.run_javascript('alert("Hello!")')
-
     top_scam_types_plot = ui.chart({
         'chart': {
             'zoomType': 'x',
@@ -63,17 +60,6 @@ def top_scam_types_plot(df):
             },
             'min': 0,
             'max': 9
-        },
-        
-        'plotOptions': {
-            'series': {
-                'cursor': 'pointer',
-                'point': {
-                    'events': {
-                        'click': a
-                    }
-                }
-            }
         },
         
         'yAxis': [

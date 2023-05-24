@@ -41,7 +41,7 @@ def heatmap(df):
 
     #   Plotting Scattermapbox
     for i in range(0, len(lat_list)):
-        t = hq_list[i] + '<br>'+ str(scam_count_list[i])
+        t = '<strong>HQ:</strong> ' + hq_list[i] + '<br>'+ '<strong>No. of Scam Reports:</strong> ' + str(scam_count_list[i])
         folium.Circle(
             location = [lat_list[i],long_list[i]],
             tooltip = Tooltip(t, style = 'font-size:15px'),
