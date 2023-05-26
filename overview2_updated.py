@@ -70,16 +70,51 @@ async def write_to_file(condition: str = Form(...), value: str = Form(...),):
 
 async def update_charts(filtered_df, condition):
     print("UPDATE CHART START")
+    if condition == "OVERSEASLOCAL":
+        #Recovery Typology Chart
+        category_list, data_list = recovery_typology_data(filtered_df)
+        rbt.options['series'][0]['data'] = data_list
+        rbt.options['xAxis']['categories'] = category_list
+        print("RBT CHART DATA DONE")
+        rbt.update()
+        #Bank Performance Table
+        new_bp_df = bank_performance_data(filtered_df)
+        table.options['rowData'] = new_bp_df.to_dict('records')
+        table.update()
+        print("GRID DATA DONE")
+        print("Updated based on OVERSEASLOCAL")
+        await add_grid_event()
+        print("Grid Event Added")
+    elif condition=="SCAMTYPE": 
+        #Fund Flow Chart
+        ffp.options['series'][0]['data'] = fundflow_data(filtered_df)
+        print("FFP CHART DATA DONE")
+        ffp.update()
+        #Bank Performance Data 
+        new_bp_df = bank_performance_data(filtered_df)
+        table.options['rowData'] = new_bp_df.to_dict('records')
+        table.update()
+        print("GRID DATA DONE")
+        print("Updated based on SCAMTYPE")
+        await add_grid_event()
+        print("Grid Event Added")
+    elif condition=="BANK":
+        #Fund Flow Chart
+        ffp.options['series'][0]['data'] = fundflow_data(filtered_df)
+        print("FFP CHART DATA DONE")
+        ffp.update()
+        #Recovery Typology Chart
+        category_list, data_list = recovery_typology_data(filtered_df)
+        rbt.options['series'][0]['data'] = data_list
+        rbt.options['xAxis']['categories'] = category_list
+        print("RBT CHART DATA DONE")
+        rbt.update()
+        print("Updated based on BANK")
 
-    #Recovery Typology Chart
-    category_list, data_list = recovery_typology_data(filtered_df)
-    rbt.options['series'][0]['data'] = data_list
-    rbt.options['xAxis']['categories'] = category_list
-    print("RBT CHART DATA DONE")
-
-    #Fund Flow Chart
-    ffp.options['series'][0]['data'] = fundflow_data(filtered_df)
-    print("FFP CHART DATA DONE")
+    #Recovery Trend Chart
+    amount_recovered_list = recovery_trend_data(filtered_df)[3]
+    rt.options['series'][0]['data'] = amount_recovered_list
+    print("RECOVERY TREND DATA DONE")
 
     #Fund Recovery Chart
     amount_scammed, amount_recover, amount_recover_percentage, amount_scammed_percentage = fund_recovery_data(filtered_df)
@@ -87,31 +122,10 @@ async def update_charts(filtered_df, condition):
     fr.options['series'][0]['data'][0]['y'] = amount_recover_percentage
     fr.options['series'][0]['data'][1]['y'] = amount_scammed_percentage
     print("FR CHART DATA DONE")
-    
-    #Bank Performance Table 
-    new_bp_df = bank_performance_data(filtered_df)
-    grid.options['rowData'] = new_bp_df.to_dict('records')
-    print("GRID DATA DONE")
 
-    #Recovery Trend Chart
-    amount_recovered_list = recovery_trend_data(filtered_df)[3]
-    rt.options['series'][0]['data'] = amount_recovered_list
-    print("RECOVERY TREND DATA DONE")
-
-    if condition == "OVERSEASLOCAL":
-        rbt.update()
-        grid.update()
-        print("Updated based on OVERSEASLOCAL")
-    elif condition=="SCAMTYPE": 
-        ffp.update()
-        grid.update()
-        print("Updated based on SCAMTYPE")
-    elif condition=="BANK":
-        ffp.update()
-        rbt.update()
-        print("Updated based on BANK")
     fr.update()
     rt.update()
+    
     print("UPDATE CHART END")
 
 
@@ -168,8 +182,6 @@ async def d2_content(client: Client):
     # ui.video('/media/jellyfish-121604.mp4', controls = False, autoplay=True, loop=True).style(bg_video)
     ui.image('/media/neon_background1.jpg').style(bg_video)
     
-    global connection
-    connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
     global df
     df= pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
     filtered_df = filter_data(df)
@@ -180,8 +192,7 @@ async def d2_content(client: Client):
         
         
         #   Recovery by Typology Plot
-        division = ui.element('div')
-        with division.style(div_general_style).style('height: 100%; width: 30%'):
+        with ui.element('div').style(div_general_style).style('height: 100%; width: 30%'):
             global rbt 
             rbt = recovery_by_typology_plot(filtered_df).style('height: 100%')
             
@@ -202,9 +213,9 @@ async def d2_content(client: Client):
         with ui.element('div').style(div_general_style).style('width: 30%'):
             with ui.row().classes('justify-between items-center').style('flex-wrap: nowrap;'):
                 ui.label("Bank's Performance").style(label_style)
-                ui.select(['min', 'max', 'sum', 'mean'], value='mean', on_change = lambda x:change_stats(x.value, grid)).style('background-color: #87c6e6 !important; border-radius:5px;').classes('px-3 w-28')
-            global grid
-            grid = bank_performance_table(df).style('height:85%;')
+                ui.select(['min', 'max', 'sum', 'mean'], value='mean', on_change=change_stats).style('background-color: #87c6e6 !important; border-radius:5px;').classes('px-3 w-28')
+            global table
+            table = bank_performance_table(filtered_df).style('height:85%;')
                 # .style('height: 50vh;') #Cant get the height correct on differnet size screens  
             
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -214,7 +225,7 @@ async def d2_content(client: Client):
         #   Recovery Trend Plot
         with ui.element('div').style(div_general_style).style('width: 70%'):
             global rt
-            rt = recovery_trend_plot(df).style('height: 100%; width: 100%')
+            rt = recovery_trend_plot(filtered_df).style('height: 100%; width: 100%')
         
         #   Breakdown of Fund Flow Plot
         with ui.element('div').style(div_general_style).style('width: 30%'):
@@ -223,7 +234,6 @@ async def d2_content(client: Client):
             
     ### Put Click event in all charts
     await client.connected(timeout = 15.0)
-    print("Client Connected")
     await ui.run_javascript("""
         const RBT_chart = getElement(""" +str(rbt.id)+""").chart;
         RBT_chart.update({
@@ -260,35 +270,6 @@ async def d2_content(client: Client):
             }
         });
 
-        const grid = getElement("""+str(grid.id)+""");
-        grid.gridOptions.onRowClicked = function(event) {
-            const selectedRows = grid.gridOptions.api.getSelectedRows();
-            let selectedBanks;
-            if (selectedRows.length === 0){
-                selectedBanks = 'None Selected'
-                console.log("if ran");
-            } else {
-                selectedBanks = selectedRows.map(row => row['Bank']).join(',');
-                console.log("else ran");
-            }
-            console.log(selectedBanks);
-            
-            $.ajax({
-                type: 'POST',
-                url: '/env', 
-                data: {
-                    condition: "BANK",
-                    value: selectedBanks,
-                },
-                success: function (response) {
-                    console.log(response);
-                },
-                error: function (xhr, status, error) {
-                    console.log(error);
-                }
-            })
-        };
-
         const FFP_chart = getElement(""" +str(ffp.id)+""").chart;
         FFP_chart.update({
             plotOptions: {
@@ -323,9 +304,8 @@ async def d2_content(client: Client):
                 }
             }
         });
-    
-        
     """, respond=False)
+    await add_grid_event()
    
 def check_db_change():
     cursor.execute("SELECT UPDATE_TIME FROM information_schema.tables WHERE TABLE_SCHEMA = 'astro' AND TABLE_NAME = 'scam_management_system'")

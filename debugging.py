@@ -1,0 +1,125 @@
+from nicegui import app, ui, Client
+import pymysql
+import pandas as pd
+
+from utils.d2_fundrecovery import *
+from utils.d2_recoverytypology import *
+from utils.d2_fundflow import *
+from utils.d2_bankperformance import *
+from utils.d2_recoverytrend import *
+from utils.filter_data import *
+from utils.javascript_functions import *
+
+from fastapi import HTTPException, Form
+from dotenv import set_key, dotenv_values
+
+
+
+
+@ui.refreshable
+@ui.page('/')
+async def d2_content(client: Client):
+
+    app.add_static_files('/media', 'media')
+
+    #has 16 px padding around nicegui-content class div 
+
+    ui.add_head_html('''
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        ''')
+
+    bg_video = '''
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: -1;
+    '''
+
+    div_general_style = '''
+        border-style: solid; 
+        border-width: 1px; 
+        border-radius: 10px;
+        border-color: rgba(24, 55, 99, 0.3); 
+        height: 100%;
+
+        background-color: rgba(24, 55, 99, 0.3);
+        
+        font-family: "Michroma"; 
+        color:#CED5DF;
+        text-align: center;
+    '''
+
+    label_style = '''
+        color:#CED5DF;
+        font-weight: bold;
+        text-align: left;
+        height:5%;
+        margin: 10px;
+    '''
+
+    # ui.video('/media/jellyfish-121604.mp4', controls = False, autoplay=True, loop=True).style(bg_video)
+    ui.image('/media/neon_background1.jpg').style(bg_video)
+    
+    global connection
+    connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
+    global df
+    df= pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
+    filtered_df = filter_data(df)
+
+    #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
+    
+    with ui.row().style('height: 60vh; width: 100%; flex-wrap: nowrap'):
+        
+        
+        #   Recovery by Typology Plot
+        division = ui.element('div')
+        with division.style(div_general_style).style('height: 100%; width: 30%'):
+            global rbt 
+            rbt = recovery_by_typology_plot(filtered_df).style('height: 100%')
+            
+
+        with ui.column().style('width: 40%; height:100%; flex-wrap: nowrap; gap:0rem;').classes('items-center'):
+            #   ASC Logo
+            with ui.element('div').style('height: 10vh; width: 100%'):
+                with ui.row().classes('items-center justify-center'): 
+                    ui.image('https://www.police.gov.sg/-/media/Spf/Archived/2021-10-28/SPF200/Homepage/Large-SPF-Logo.ashx?h=296&w=314&la=en&hash=5D66E7698CEFB5D7B9028D9905C03967').style('width: 5vw')
+                    ui.label('ANTI-SCAM CENTRE').style('font-family: Michroma; font-size: 1.1vw; color: #CED5DF; letter-spacing: 0.2vw; word-spacing: 0.3vw; font-weight: bold;')
+
+            #   Fund Recovery Progress
+            with ui.element('div').classes('items-center').style('align: center; height: 50vh; width: 100%'):
+                global fr
+                fr = fund_recovery_plot(filtered_df).style('position:relative; width: 100%; height: 100%')
+
+        #   Bank's Performance
+        with ui.element('div').style(div_general_style).style('width: 30%'):
+            with ui.row().classes('justify-between items-center').style('flex-wrap: nowrap;'):
+                ui.label("Bank's Performance").style(label_style)
+                ui.select(['min', 'max', 'sum', 'mean'], value='mean', on_change = lambda x:change_stats(x.value, grid)).style('background-color: #87c6e6 !important; border-radius:5px;').classes('px-3 w-28')
+            global grid
+            grid = bank_performance_table(df).style('height:85%;')
+                # .style('height: 50vh;') #Cant get the height correct on differnet size screens  
+            
+    #-------------------------------------------------------------------------------------------------------------------------------------------------------------#
+
+    with ui.row().style('height: 34.5vh; width: 100%; flex-wrap: nowrap;'):
+        
+        #   Recovery Trend Plot
+        with ui.element('div').style(div_general_style).style('width: 70%'):
+            global rt
+            rt = recovery_trend_plot(df).style('height: 100%; width: 100%')
+        
+        #   Breakdown of Fund Flow Plot
+        with ui.element('div').style(div_general_style).style('width: 30%'):
+            global ffp
+            ffp = fund_flow_plot(filtered_df).style('height: 100%; width: 100%')
+
+ui.run(port = 8082)

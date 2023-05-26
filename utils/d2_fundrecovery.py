@@ -6,7 +6,6 @@ def fund_recovery_data(df):
     df_amount_recovery = df_amount_recovery.fillna(0)
             
     amount_scammed = df_amount_recovery['amount_scammed'].sum()
-    print("calculated amount scammed")
 
     amount_recover= 0
     for i in df_amount_recovery.index:

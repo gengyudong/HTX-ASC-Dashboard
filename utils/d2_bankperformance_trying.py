@@ -72,7 +72,7 @@ def bank_performance_table(df):
                                     'sortable':True, 
                                     'floatingFilter': True,
                                     'suppressMenu' : True,
-                                    },
+                                    }
     
     grid.options['rowSelection'] = 'multiple'
     grid.options['rowMultiSelectWithClick']= True
@@ -85,43 +85,3 @@ async def change_stats(event):
     for i in range(len(stats.index)):
         grid.options['rowData'][i]['Amount Scammed'] = stats['amount_scammed-'+event.value].iat[i]
     grid.update()
-    # await add_grid_event()
-
-
-async def add_grid_event():
-    await ui.run_javascript("""
-        const grid = getElement("""+str(grid.id)+""");
-        grid.gridOptions.onRowClicked = function(event) {
-            const selectedRows = grid.gridOptions.api.getSelectedRows();
-            let selectedBanks;
-            if (selectedRows.length === 0){
-                selectedBanks = 'None Selected'
-                console.log("if ran");
-            } else {
-                selectedBanks = selectedRows.map(row => row['Bank']).join(',');
-                console.log("else ran");
-            }
-            console.log(selectedBanks);
-            Highcharts.each(Highcharts.charts, function(chart){
-                const points_to_deselect = chart.getSelectedPoints()
-                if (points_to_deselect.length>0){
-                    for (let i of points_to_deselect){
-                        i.select(false)
-                    }
-                }
-            });
-            $.ajax({
-                type: 'POST',
-                url: '/env', 
-                data: {
-                    condition: "BANK",
-                    value: selectedBanks,
-                },
-                success: function (response) {
-                    console.log(response);
-                },
-                error: function (xhr, status, error) {
-                    console.log(error);
-                }
-            })
-        };""", respond=False)

@@ -2,6 +2,7 @@ from nicegui import ui
 from datetime import timedelta, datetime, timezone, date
 
 def recovery_trend_data(df):
+    
     df_recovery_trend = df[['date_assigned', 'amount_scammed', 'latest_balance_seized']].copy()
     df_recovery_trend = df_recovery_trend.fillna(0)
     
@@ -10,7 +11,7 @@ def recovery_trend_data(df):
     amount_recovered_list = []
     amount_recovered_interim = 0
 
-    start_date = df_recovery_trend['date_assigned'].iat[0]
+    start_date = df_recovery_trend['date_assigned'].iloc[0]
     time = datetime.min.time()
     start_datetime = datetime.combine(start_date, time)
     start_datetime = round(start_datetime.replace(tzinfo=timezone.utc).timestamp()) * 1000
@@ -21,19 +22,19 @@ def recovery_trend_data(df):
     time = datetime.min.time()
     default_max_datetime = datetime.combine(max_date, time)
     default_max_xview = round(default_max_datetime.replace(tzinfo=timezone.utc).timestamp()) * 1000
-
+    
     min_date = max_date - timedelta(days = 90)
     default_min_datetime = datetime.combine(min_date, time)
     default_min_xview = round(default_min_datetime.replace(tzinfo=timezone.utc).timestamp()) * 1000
-
+    
     while current_date != end_date:
         dates.append(current_date)
         current_date += timedelta(days = 1)
     dates.append(current_date)
-
+    
     for x in dates:
         x = x.strftime('%Y-%m-%d')
-
+    
     current_date = start_date
     
     for i in range(iteration_count):
@@ -52,7 +53,7 @@ def recovery_trend_data(df):
             amount_recovered_interim += df_recovery_trend['amount_scammed'].iat[i]
         else:
             amount_recovered_interim += df_recovery_trend['latest_balance_seized'].iat[i]
- 
+    
     amount_recovered_interim /= 1000000
     amount_recovered_interim = round(amount_recovered_interim, 2)
     amount_recovered_list.append(amount_recovered_interim)
@@ -60,7 +61,7 @@ def recovery_trend_data(df):
     while current_date != max_date:
         amount_recovered_list.append(0)   
         current_date += timedelta(days = 1)
-        
+    
     amount_recovered_list.append(0)
     return default_min_xview, default_max_xview, start_datetime, amount_recovered_list
 

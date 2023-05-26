@@ -128,7 +128,6 @@ def recovery_by_typology_plot(df):
                     
                     }],
         }, extras = ['stock']) 
-    print(chart.options['series'])
 
     return chart
 

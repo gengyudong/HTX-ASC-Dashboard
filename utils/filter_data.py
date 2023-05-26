@@ -6,6 +6,8 @@ def filter_data(df):
     env_path = os.path.join(parent_dir, '.env')
     env_vars = dotenv_values(env_path)
 
+    df['account_bank'] = df['account_bank'].str.upper()
+
     options = []
     conditionexists = False
     for key in env_vars.keys():
@@ -22,7 +24,10 @@ def filter_data(df):
     
     if conditionexists:
         filtered_df = df.loc[df[condition].isin(options)]
+        print("CONDITION:", condition, "OPTIONS", options)
     else: 
         filtered_df = df
     
     return filtered_df
+
+
