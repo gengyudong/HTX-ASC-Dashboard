@@ -1,12 +1,8 @@
-import pymysql
 import pandas as pd
 from nicegui import ui
 
 # def formatter(y):
 #     return str(y/1000000)+'M'
-# connection = pymysql.connect(host = '119.74.24.181', user = 'htx', password = 'Police123456', database = 'ASTRO')
-# df = pd.read_sql_query("SELECT * FROM astro.scam_management_system", connection)
-
 
 def recovery_by_typology_plot(df):
     
@@ -42,44 +38,41 @@ def recovery_by_typology_plot(df):
         else:
             groupedDf.at[scam, 'recovery'] = groupedDf.at[scam,'latest_balance_seized']
 
+    groupedDf = groupedDf.sort_values(by = ['recovery'], ascending=False)  
     scam_list = groupedDf.index.to_list()
     recovery_list = groupedDf.loc[:,'recovery'].to_list()
 
 
     ###     Bar Chart
     chart = ui.chart({
+            'chart': {
+                'type': 'bar',
+                'backgroundColor': 'rgba(0,0,0,0)'},
+            
             'title': {
-                'text': None,
-                'margin': 10,
+                'text': 'Recovery by typology',
+                'margin': 20,
                 'align': 'left',
                 'style': {
                     'color': '#CED5DF',
                     'fontWeight': 'bold',
-                    'fontFamily': 'Michroma',
-                    'fontSize': '13px',
-            }
+                    'fontFamily': 'Michroma'
+                }
             },
-            'chart': {
-                'type': 'bar',
-                'backgroundColor': 'rgba(0,0,0,0)'},
 
             'xAxis': {
                 'type': 'category',
                 'categories': scam_list,
                 'min': 0,
-                'max': 4,
+                'max': 9,
                 'tickLength': 0,
                 'labels':{
-                    'style': {'color': '#CED5DF',
-                            #   'font-size':'1.5vh',
+                    'style': {
+                        'color': '#CED5DF',
                               }
                 },
                 'scrollbar':{
                 'enabled':True,
-                # 'barBorderRadius': 1,
-                # 'rifleColor': None,
-                # 'trackBackgroundColor': 'rgba(0,0,0,0)',
-                # 'showFull':False, 
             },
             },
             'yAxis':{
@@ -107,6 +100,12 @@ def recovery_by_typology_plot(df):
                     'borderWidth':0,
                 }
             },
+
+            'tooltip':{
+                'valueDecimals': 2,
+                'valuePrefix': '$',
+            },
+
             'legend': {
                 'enabled': 'false'
             },
@@ -119,6 +118,8 @@ def recovery_by_typology_plot(df):
                         # 'color': 'rgba(52, 181, 213, 0.7)',
                     'dataLabels':{
                             'enabled': True,
+                            'format': '${point.y:,.2f}',
+                            
             #                 'formatter':""" function () {
             #     return this.value + ' units';
             # }"""
@@ -140,6 +141,3 @@ def recovery_by_typology_plot(df):
         }, extras = ['stock']) 
 
     return chart
-
-# recovery_by_typology_plot(df)
-# ui.run()

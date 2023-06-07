@@ -1,8 +1,8 @@
 from nicegui import ui
 
-def top_scam_types_data(df):
+def top_scam_types_data(filtered_df):
     #   Retrive Data
-    df_scam_type = df[['scam_type', 'amount_scammed']].copy()
+    df_scam_type = filtered_df[['scam_type', 'amount_scammed']].copy()
     
     #   Data Cleaning
     df_scam_type['scam_type'] = df_scam_type['scam_type'].str.lower()

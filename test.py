@@ -11,7 +11,7 @@ cursor.execute("SELECT UPDATE_TIME FROM information_schema.tables WHERE TABLE_SC
 result = cursor.fetchone()
 initial_updated_time = result[0]
 
-@ui.refreshable
+
 def data():
     connection2 = pymysql.connect(host = 'localhost', user = 'root', password = 'X-rayisharmful01', database = 'sys')
     
@@ -28,11 +28,6 @@ def content():
     
 content()
 
-
-
-def update_content():
-    data.refresh()
-    # chart.refresh()
     
 def check_db_change():
     cursor.execute("SELECT UPDATE_TIME FROM information_schema.tables WHERE TABLE_SCHEMA = 'sys' AND TABLE_NAME = 'sys_config'")
@@ -45,6 +40,6 @@ def check_db_change():
         initial_updated_time = latest_update_time
     
 
-ui.timer(5.0, update_content)
+ui.timer(5.0, check_db_change)
 ui.run(port = 8082)
 

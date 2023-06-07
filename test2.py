@@ -2,6 +2,7 @@ from nicegui import ui
 import pymysql
 import pandas as pd
 
+@ui.refreshable
 def chart(df_test):
     df_test2 = df_test['variable'].value_counts().reset_index()
 
@@ -58,6 +59,4 @@ def chart(df_test):
             'name': 'Year 1990',
             'data': y_axis
         }]
-    })
-    
-    return chart
+    }).style('height: 50vh; width: 40vw')

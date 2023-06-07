@@ -77,7 +77,7 @@ def bank_performance_table_dropdown(df):
     ######################
     return grid
 
-def update(x, grid):
+def change_stats(x, grid):
 
     for i in range(len(stats.index)):
         grid.options['rowData'][i]['Amount Scammed'] = stats['amount_scammed-'+x][i]

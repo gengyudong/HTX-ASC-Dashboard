@@ -77,13 +77,16 @@ def scam_typology_plot_data(df):
             data_dict['name'] = current_scam_name
             data_dict['data'] = data_list
             series_list.append(data_dict)
+            while current_date.date() != max_date:
+                data_list.append(0)   
+                current_date += timedelta(days = 1)
                 
         if df_scam_type['scam_type'].iat[i] != current_scam_name:
-            while current_date != max_date:
+            while current_date.date() != max_date:
                 data_list.append(0)   
                 current_date += timedelta(days = 1)
             
-                if current_date == max_date:
+                if current_date.date() == max_date:
                     data_list.append(0)
     
             data_dict['name'] = current_scam_name
@@ -97,7 +100,7 @@ def scam_typology_plot_data(df):
             current_date = df_scam_type['date_assigned'][i]
             data_list.append((df_scam_type['count'][i]))
             current_date += timedelta(days = 1)
-
+            
     return start_date, series_list
 
 

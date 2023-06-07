@@ -1,11 +1,16 @@
 from nicegui import ui
 
-def telco_plot(telco_df):
+def telco_plot_data(telco_df):
     #   Data Processing
     telco_count_series = telco_df.groupby('telco').size()
     telco_name_list = telco_count_series.index.to_list()
     telco_count_list = telco_count_series.to_list()
+    
+    return telco_name_list, telco_count_list
 
+def telco_plot(telco_df):
+    telco_name_list, telco_count_list = telco_plot_data(telco_df)
+    
     #   Chart
     chart = ui.chart({
             'chart': {
@@ -33,6 +38,7 @@ def telco_plot(telco_df):
             },
             
             'credits': { 'enabled': False },
+            
             'xAxis': {
                 'gridLineDashStyle': 'dash',
                 'categories': telco_name_list,
@@ -40,6 +46,7 @@ def telco_plot(telco_df):
                     'style': {'color': '#CED5DF'}
                 },
             },
+            
             'series': [{'data': telco_count_list,
                     'dataLabels':{
                             'enabled': True
@@ -50,7 +57,6 @@ def telco_plot(telco_df):
             'legend':{
                 'enabled': False
             }
-            
         }).classes('w-full h-64')
 
     return chart

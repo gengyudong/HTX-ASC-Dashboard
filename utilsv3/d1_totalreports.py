@@ -9,10 +9,11 @@ def total_reports(df):
 
 
 def victim_count_calculation(df, date):
-    past_df = df[df.date_assigned == date]
+    past_df = df[df['date_assigned'] == date]
     victim_count = len(past_df.index)
     
     return victim_count
+
 
 def victim_count(df):
     today = date.today()
@@ -35,7 +36,7 @@ def victim_count(df):
     past_year_victim_count = victim_count_calculation(df, past_year)
     
     return today_victim_count, past_day_victim_count, past_week_victim_count, past_month_victim_count, past_year_victim_count
-         
+        
                 
 def percentage_calculation(today, past):
     if past == 0:
@@ -48,6 +49,7 @@ def percentage_calculation(today, past):
 
         return percentage_change
 
+
 def percentage(df):
     today_victim_count, past_day_victim_count,past_week_victim_count, past_month_victim_count, past_year_victim_count = victim_count(df)
     
@@ -59,23 +61,24 @@ def percentage(df):
     return day_percentage, week_percentage, month_percentage, year_percentage
 
 
-def arrow_type_calculation(today_victim_count, past_victim_count):
+def change_calculation(today_victim_count, past_victim_count):
     change = today_victim_count - past_victim_count
     if change > 0:
-        return 'arrow_upward'
+        return '#3D1915', '#C14A78'
     
     if change < 0:
-        return 'arrow_downward'
+        return '#117E73', '#28E2CF'
     
     else:
-        return "remove"
+        return '#404F63', '#CED5DF'
     
-def arrow_function(df):
+    
+def case_change(df):
     today_victim_count, past_day_victim_count,past_week_victim_count, past_month_victim_count, past_year_victim_count = victim_count(df)
     
-    day_arrow = arrow_type_calculation(today_victim_count, past_day_victim_count)       
-    week_arrow = arrow_type_calculation(today_victim_count, past_week_victim_count)
-    month_arrow = arrow_type_calculation(today_victim_count, past_month_victim_count)
-    year_arrow = arrow_type_calculation(today_victim_count, past_year_victim_count)
+    day_change = change_calculation(today_victim_count, past_day_victim_count)       
+    week_change = change_calculation(today_victim_count, past_week_victim_count)
+    month_change = change_calculation(today_victim_count, past_month_victim_count)
+    year_change = change_calculation(today_victim_count, past_year_victim_count)
     
-    return day_arrow, week_arrow, month_arrow, year_arrow
+    return day_change, week_change, month_change, year_change
